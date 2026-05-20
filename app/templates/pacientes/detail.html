@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ paciente.nombre }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ paciente.nombre }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('pacientes.edit', id=paciente.id) }}" class="btn btn-warning">Editar</a>
+        <a href="{{ url_for('pacientes.list') }}" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Información del Paciente</h5>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Cédula:</strong><br>
+                        {{ paciente.cedula }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Estado:</strong><br>
+                        <span class="badge bg-{{ 'success' if paciente.estado == 'activo' else 'danger' }}">
+                            {{ paciente.estado }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Email:</strong><br>
+                        {{ paciente.email or '-' }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Teléfono:</strong><br>
+                        {{ paciente.telefono or '-' }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Fecha de Ingreso:</strong><br>
+                        {{ paciente.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Última Actualización:</strong><br>
+                        {{ paciente.updated_at.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

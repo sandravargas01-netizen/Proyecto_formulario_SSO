@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Nuevo Paciente</h2>
+
+<form method="POST">
+
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.nombres.label }}
+        {{ form.nombres() }}
+    </p>
+
+    <p>
+        {{ form.apellidos.label }}
+        {{ form.apellidos() }}
+    </p>
+
+    <p>
+        {{ form.documento.label }}
+        {{ form.documento() }}
+    </p>
+
+    <p>
+        {{ form.edad.label }}
+        {{ form.edad() }}
+    </p>
+
+    <p>
+        {{ form.telefono.label }}
+        {{ form.telefono() }}
+    </p>
+
+    <p>
+        {{ form.correo.label }}
+        {{ form.correo() }}
+    </p>
+
+    <p>
+        {{ form.submit() }}
+    </p>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Panel de Administración</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Usuarios Totales</h5>
+                <h2>{{ total_users }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Pacientes Totales</h5>
+                <h2>{{ total_pacientes }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Pacientes Activos</h5>
+                <h2>{{ active_pacientes }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('admin.users') }}" class="btn btn-block btn-outline-primary mb-2 w-100">Gestionar Usuarios</a>
+                <a href="{{ url_for('admin.reports') }}" class="btn btn-block btn-outline-secondary mb-2 w-100">Ver Reportes</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
