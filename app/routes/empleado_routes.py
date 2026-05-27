@@ -8,13 +8,13 @@ from flask import (
 
 from app import db
 
-from app.models.paciente import Paciente
+from app.models.empleados import Empleado
 
 
-paciente_bp = Blueprint(
-    "paciente",
+empleado_bp = Blueprint(
+    "empleado",
     __name__,
-    url_prefix="/pacientes"
+    url_prefix="/empleados"
 )
 
 
@@ -22,14 +22,14 @@ paciente_bp = Blueprint(
 # LISTAR
 # ==========================================
 
-@paciente_bp.route("/")
+@empleado_bp.route("/")
 def listar():
 
-    pacientes = Paciente.query.all()
+    empleados = Empleado.query.all()
 
     return render_template(
-        "pacientes/list.html",
-        pacientes=pacientes
+        "empleados/list.html",
+        empleados=empleados
     )
 
 
@@ -37,12 +37,12 @@ def listar():
 # CREAR
 # ==========================================
 
-@paciente_bp.route("/crear", methods=["GET", "POST"])
+@empleado_bp.route("/crear", methods=["GET", "POST"])
 def crear():
 
     if request.method == "POST":
 
-        paciente = Paciente(
+        empleado = Empleado(
 
             nombre=request.form["nombre"],
 
@@ -63,16 +63,16 @@ def crear():
             cargo=request.form["cargo"]
         )
 
-        db.session.add(paciente)
+        db.session.add(empleado)
 
         db.session.commit()
 
         return redirect(
-            url_for("paciente.listar")
+            url_for("empleado.listar")
         )
 
     return render_template(
-        "pacientes/crear.html"
+        "empleados/crear.html"
     )
 
 
@@ -80,14 +80,14 @@ def crear():
 # DETALLE
 # ==========================================
 
-@paciente_bp.route("/<int:id>")
+@empleado_bp.route("/<int:id>")
 def detalle(id):
 
-    paciente = Paciente.query.get_or_404(id)
+    empleado = Empleado.query.get_or_404(id)
 
     return render_template(
-        "pacientes/detail.html",
-        paciente=paciente
+        "empleados/detail.html",
+        empleado=empleado
     )
 
 
@@ -95,18 +95,18 @@ def detalle(id):
 # ELIMINAR
 # ==========================================
 
-@paciente_bp.route(
+@empleado_bp.route(
     "/eliminar/<int:id>",
     methods=["POST"]
 )
 def eliminar(id):
 
-    paciente = Paciente.query.get_or_404(id)
+    empleado = Empleado.query.get_or_404(id)
 
-    db.session.delete(paciente)
+    db.session.delete(empleado)
 
     db.session.commit()
 
     return redirect(
-        url_for("paciente.listar")
+        url_for("empleado.listar")
     )

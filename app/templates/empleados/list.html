@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h2>Empleados</h2>
+
+    <a href="/empleados/crear"
+       class="btn btn-primary">
+
+        Nuevo Empleado
+
+    </a>
+
+</div>
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <table class="table table-hover">
+
+            <thead class="table-dark">
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Nombre</th>
+
+                    <th>Cédula</th>
+
+                    <th>Cargo</th>
+
+                    <th>EPS</th>
+
+                    <th>Acciones</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for empleado in empleados %}
+
+                <tr>
+
+                    <td>{{ empleado.id }}</td>
+
+                    <td>{{ empleado.nombre }}</td>
+
+                    <td>{{ empleado.cedula }}</td>
+
+                    <td>{{ empleado.cargo }}</td>
+
+                    <td>{{ empleado.eps }}</td>
+
+                    <td>
+
+                        <a href="/empleados/{{ empleado.id }}"
+                           class="btn btn-info btn-sm">
+
+                            Ver
+
+                        </a>
+
+                        <form method="POST"
+                              action="/empleados/eliminar/{{ empleado.id }}"
+                              style="display:inline;">
+
+                            <button class="btn btn-danger btn-sm">
+
+                                Eliminar
+
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

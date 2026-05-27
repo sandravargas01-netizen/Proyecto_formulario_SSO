@@ -1,6 +1,12 @@
 import os
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.abspath(
+    os.path.dirname(__file__)
+)
+
+INSTANCE_DIR = os.path.abspath(
+    os.path.join(BASE_DIR, "..", "instance")
+)
 
 
 class Config:
@@ -16,6 +22,6 @@ class DevelopmentConfig(Config):
 
     SQLALCHEMY_DATABASE_URI = \
         "sqlite:///" + os.path.join(
-            BASE_DIR,
+            INSTANCE_DIR,
             "salud_ocupacional.db"
         )

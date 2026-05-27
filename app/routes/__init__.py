@@ -15,7 +15,7 @@ def create_app():
     db.init_app(app)
 
     from app.routes.auth_routes import auth_bp
-    from app.routes.paciente_routes import paciente_bp
+    from Proyecto_formulario_SSO.app.routes.empleado_routes import paciente_bp
     from app.routes.admin_routes import admin_bp
 
     app.register_blueprint(auth_bp)

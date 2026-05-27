@@ -3,8 +3,7 @@ from flask import (
     render_template,
     request,
     redirect,
-    session,
-    url_for
+    session
 )
 
 auth_bp = Blueprint(
@@ -30,7 +29,9 @@ def login():
 
         password = request.form["password"]
 
+        # =========================
         # ADMIN
+        # =========================
         if (
             email == "admin@gmail.com"
             and
@@ -45,7 +46,9 @@ def login():
                 "/admin/dashboard"
             )
 
+        # =========================
         # AUXILIAR
+        # =========================
         if (
             email == "auxiliar@gmail.com"
             and
@@ -57,11 +60,51 @@ def login():
             session["rol"] = "auxiliar"
 
             return redirect(
-                "/pacientes/"
+                "/empleados/"
             )
 
     return render_template(
         "auth/login.html"
+    )
+
+
+# ==========================================
+# RECUPERAR CONTRASEÑA
+# ==========================================
+
+@auth_bp.route(
+    "/recuperar-password",
+    methods=["GET", "POST"]
+)
+def recuperar_password():
+
+    mensaje = None
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+
+        # VALIDAR CORREOS EXISTENTES
+        if (
+            email == "admin@gmail.com"
+            or
+            email == "auxiliar@gmail.com"
+        ):
+
+            mensaje = (
+                "Se envió un enlace de recuperación "
+                "al correo ingresado."
+            )
+
+        else:
+
+            mensaje = (
+                "El correo no existe en el sistema."
+            )
+
+    return render_template(
+        "auth/recuperar_password.html",
+        mensaje=mensaje
     )
 
 

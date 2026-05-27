@@ -30,12 +30,12 @@ def create_app():
     # ==========================================
 
     from app.routes.auth_routes import auth_bp
-    from app.routes.paciente_routes import paciente_bp
+    from app.routes.empleado_routes import empleado_bp
     from app.routes.admin_routes import admin_bp
     from app.routes.examen_routes import examen_bp
 
     app.register_blueprint(auth_bp)
-    app.register_blueprint(paciente_bp)
+    app.register_blueprint(empleado_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(examen_bp)
 

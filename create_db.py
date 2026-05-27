@@ -3,7 +3,7 @@ from app import create_app, db
 # IMPORTAR MODELOS
 from app.models.examen import Examen
 from app.models.user import User
-from app.models.paciente import Paciente
+from Proyecto_formulario_SSO.app.models.empleados import Paciente
 
 app = create_app()
 

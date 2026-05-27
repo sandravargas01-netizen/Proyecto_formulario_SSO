@@ -3,7 +3,7 @@ from flask import (
     render_template
 )
 
-from app.models.paciente import Paciente
+from app.models.empleados import Empleado
 from app.models.examen import Examen
 
 
@@ -21,29 +21,17 @@ admin_bp = Blueprint(
 @admin_bp.route("/dashboard")
 def dashboard():
 
-    # ==============================
-    # CONTADORES
-    # ==============================
-
-    total_empleados = Paciente.query.count()
+    total_empleados = Empleado.query.count()
 
     total_examenes = Examen.query.count()
 
-    activos = Paciente.query.filter_by(
+    activos = Empleado.query.filter_by(
         estado="activo"
     ).count()
 
-    # ==============================
-    # LISTAS
-    # ==============================
-
-    pacientes = Paciente.query.all()
+    empleados = Empleado.query.all()
 
     examenes = Examen.query.all()
-
-    # ==============================
-    # TEMPLATE
-    # ==============================
 
     return render_template(
 
@@ -55,24 +43,24 @@ def dashboard():
 
         activos=activos,
 
-        pacientes=pacientes,
+        empleados=empleados,
 
         examenes=examenes
     )
 
 
 # ==========================================
-# USUARIOS
+# EMPLEADOS
 # ==========================================
 
 @admin_bp.route("/users")
 def users():
 
-    pacientes = Paciente.query.all()
+    empleados = Empleado.query.all()
 
     return render_template(
         "admin/users.html",
-        pacientes=pacientes
+        empleados=empleados
     )
 
 

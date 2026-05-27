@@ -24,7 +24,7 @@
                     {{ total_empleados }}
                 </h1>
 
-                <a href="/pacientes/"
+                <a href="/empleados/"
                    class="btn btn-light mt-3">
 
                     Ver Empleados
@@ -78,7 +78,7 @@
                     {{ activos }}
                 </h1>
 
-                <a href="/pacientes/crear"
+                <a href="/empleados/crear"
                    class="btn btn-light mt-3">
 
                     Nuevo Empleado
@@ -104,7 +104,7 @@
             Base Empleados
         </h4>
 
-        <a href="/pacientes/"
+        <a href="/empleados/"
            class="btn btn-primary btn-sm">
 
             Ir a Empleados
@@ -133,19 +133,19 @@
 
             <tbody>
 
-                {% for paciente in pacientes %}
+                {% for empleado in empleados %}
 
                 <tr>
 
-                    <td>{{ paciente.id }}</td>
+                    <td>{{ empleado.id }}</td>
 
-                    <td>{{ paciente.nombre }}</td>
+                    <td>{{ empleado.nombre }}</td>
 
-                    <td>{{ paciente.cedula }}</td>
+                    <td>{{ empleado.cedula }}</td>
 
-                    <td>{{ paciente.cargo }}</td>
+                    <td>{{ empleado.cargo }}</td>
 
-                    <td>{{ paciente.eps }}</td>
+                    <td>{{ empleado.eps }}</td>
 
                 </tr>
 
