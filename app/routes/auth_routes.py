@@ -1,11 +1,11 @@
 from flask import (
     Blueprint,
     render_template,
+    request,
     redirect,
+    session,
     url_for
 )
-
-from app.forms.login_form import LoginForm
 
 auth_bp = Blueprint(
     "auth",
@@ -13,16 +13,67 @@ auth_bp = Blueprint(
     url_prefix="/auth"
 )
 
-@auth_bp.route("/login", methods=["GET", "POST"])
+
+# ==========================================
+# LOGIN
+# ==========================================
+
+@auth_bp.route(
+    "/login",
+    methods=["GET", "POST"]
+)
 def login():
 
-    form = LoginForm()
+    if request.method == "POST":
 
-    if form.validate_on_submit():
+        email = request.form["email"]
 
-        return redirect(url_for("paciente.listar"))
+        password = request.form["password"]
+
+        # ADMIN
+        if (
+            email == "admin@gmail.com"
+            and
+            password == "123"
+        ):
+
+            session["usuario"] = email
+
+            session["rol"] = "admin"
+
+            return redirect(
+                "/admin/dashboard"
+            )
+
+        # AUXILIAR
+        if (
+            email == "auxiliar@gmail.com"
+            and
+            password == "123"
+        ):
+
+            session["usuario"] = email
+
+            session["rol"] = "auxiliar"
+
+            return redirect(
+                "/pacientes/"
+            )
 
     return render_template(
-        "auth/login.html",
-        form=form
+        "auth/login.html"
+    )
+
+
+# ==========================================
+# LOGOUT
+# ==========================================
+
+@auth_bp.route("/logout")
+def logout():
+
+    session.clear()
+
+    return redirect(
+        "/auth/login"
     )

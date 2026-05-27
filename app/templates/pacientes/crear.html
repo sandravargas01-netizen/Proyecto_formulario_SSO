@@ -2,46 +2,104 @@
 
 {% block content %}
 
-<h2>Nuevo Paciente</h2>
+<div class="card shadow">
 
-<form method="POST">
+    <div class="card-body">
 
-    {{ form.hidden_tag() }}
+        <h3 class="mb-4">
+            Registro Empleado
+        </h3>
 
-    <p>
-        {{ form.nombres.label }}
-        {{ form.nombres() }}
-    </p>
+        <form method="POST">
 
-    <p>
-        {{ form.apellidos.label }}
-        {{ form.apellidos() }}
-    </p>
+            <div class="row">
 
-    <p>
-        {{ form.documento.label }}
-        {{ form.documento() }}
-    </p>
+                <div class="col-md-6 mb-3">
+                    <label>Nombre Completo</label>
 
-    <p>
-        {{ form.edad.label }}
-        {{ form.edad() }}
-    </p>
+                    <input type="text"
+                           name="nombre"
+                           class="form-control">
+                </div>
 
-    <p>
-        {{ form.telefono.label }}
-        {{ form.telefono() }}
-    </p>
+                <div class="col-md-6 mb-3">
+                    <label>Cédula</label>
 
-    <p>
-        {{ form.correo.label }}
-        {{ form.correo() }}
-    </p>
+                    <input type="text"
+                           name="cedula"
+                           class="form-control">
+                </div>
 
-    <p>
-        {{ form.submit() }}
-    </p>
+                <div class="col-md-6 mb-3">
+                    <label>Fecha Nacimiento</label>
 
-</form>
+                    <input type="date"
+                           name="fecha_nacimiento"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Teléfono</label>
+
+                    <input type="text"
+                           name="telefono"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Correo</label>
+
+                    <input type="email"
+                           name="correo"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>EPS</label>
+
+                    <input type="text"
+                           name="eps"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>AFP</label>
+
+                    <input type="text"
+                           name="afp"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Sexo</label>
+
+                    <select name="sexo"
+                            class="form-control">
+
+                        <option>Masculino</option>
+                        <option>Femenino</option>
+
+                    </select>
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <label>Cargo</label>
+
+                    <input type="text"
+                           name="cargo"
+                           class="form-control">
+                </div>
+
+            </div>
+
+            <button class="btn btn-primary">
+                Guardar Empleado
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
 
 {% endblock %}

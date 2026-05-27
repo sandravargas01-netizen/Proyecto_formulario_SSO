@@ -1,48 +1,228 @@
-{% extends "base.html" %}
-
-{% block title %}Admin - Dashboard{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<h2 class="mb-4">Panel de Administración</h2>
 
-<div class="row mb-4">
+<h1 class="mb-5">
+    Panel de Administración
+</h1>
+
+<!-- TARJETAS -->
+
+<div class="row mb-5">
+
     <div class="col-md-4">
-        <div class="card bg-primary text-white">
+
+        <div class="card bg-primary text-white shadow">
+
             <div class="card-body">
-                <h5 class="card-title">Usuarios Totales</h5>
-                <h2>{{ total_users }}</h2>
+
+                <h4>
+                    Empleados Totales
+                </h4>
+
+                <h1>
+                    {{ total_empleados }}
+                </h1>
+
+                <a href="/pacientes/"
+                   class="btn btn-light mt-3">
+
+                    Ver Empleados
+
+                </a>
+
             </div>
+
         </div>
+
     </div>
+
     <div class="col-md-4">
-        <div class="card bg-success text-white">
+
+        <div class="card bg-success text-white shadow">
+
             <div class="card-body">
-                <h5 class="card-title">Pacientes Totales</h5>
-                <h2>{{ total_pacientes }}</h2>
+
+                <h4>
+                    Exámenes Totales
+                </h4>
+
+                <h1>
+                    {{ total_examenes }}
+                </h1>
+
+                <a href="/examenes/"
+                   class="btn btn-light mt-3">
+
+                    Ver Exámenes
+
+                </a>
+
             </div>
+
         </div>
+
     </div>
+
     <div class="col-md-4">
-        <div class="card bg-info text-white">
+
+        <div class="card bg-info text-white shadow">
+
             <div class="card-body">
-                <h5 class="card-title">Pacientes Activos</h5>
-                <h2>{{ active_pacientes }}</h2>
+
+                <h4>
+                    Empleados Activos
+                </h4>
+
+                <h1>
+                    {{ activos }}
+                </h1>
+
+                <a href="/pacientes/crear"
+                   class="btn btn-light mt-3">
+
+                    Nuevo Empleado
+
+                </a>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Acciones Rápidas</h5>
-            </div>
-            <div class="card-body">
-                <a href="{{ url_for('admin.users') }}" class="btn btn-block btn-outline-primary mb-2 w-100">Gestionar Usuarios</a>
-                <a href="{{ url_for('admin.reports') }}" class="btn btn-block btn-outline-secondary mb-2 w-100">Ver Reportes</a>
-            </div>
-        </div>
+
+<!-- TABLA EMPLEADOS -->
+
+<div class="card shadow mb-5">
+
+    <div class="card-header bg-dark text-white d-flex justify-content-between">
+
+        <h4>
+            Base Empleados
+        </h4>
+
+        <a href="/pacientes/"
+           class="btn btn-primary btn-sm">
+
+            Ir a Empleados
+
+        </a>
+
     </div>
+
+    <div class="card-body">
+
+        <table class="table table-hover">
+
+            <thead class="table-dark">
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Cédula</th>
+                    <th>Cargo</th>
+                    <th>EPS</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for paciente in pacientes %}
+
+                <tr>
+
+                    <td>{{ paciente.id }}</td>
+
+                    <td>{{ paciente.nombre }}</td>
+
+                    <td>{{ paciente.cedula }}</td>
+
+                    <td>{{ paciente.cargo }}</td>
+
+                    <td>{{ paciente.eps }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
 </div>
+
+
+<!-- TABLA EXÁMENES -->
+
+<div class="card shadow">
+
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+
+        <h4>
+            Exámenes Ocupacionales
+        </h4>
+
+        <a href="/examenes/"
+           class="btn btn-light btn-sm">
+
+            Ir a Exámenes
+
+        </a>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-hover">
+
+            <thead class="table-primary">
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Tipo Examen</th>
+
+                    <th>Fecha</th>
+
+                    <th>Tipo Contrato</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for examen in examenes %}
+
+                <tr>
+
+                    <td>{{ examen.id }}</td>
+
+                    <td>{{ examen.tipo_examen }}</td>
+
+                    <td>{{ examen.fecha_examen }}</td>
+
+                    <td>{{ examen.tipo_contrato }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
 {% endblock %}

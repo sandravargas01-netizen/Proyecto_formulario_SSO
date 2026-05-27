@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card shadow">
+
+    <div class="card-body">
+
+        <h2 class="mb-4">
+            Nuevo Examen
+        </h2>
+
+        <form method="POST">
+
+            <div class="mb-3">
+
+                <label>
+                    Tipo Examen
+                </label>
+
+                <select
+                    name="tipo_examen"
+                    class="form-control"
+                >
+
+                    <option>
+                        Ingreso
+                    </option>
+
+                    <option>
+                        Periódico
+                    </option>
+
+                    <option>
+                        Retiro
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label>
+                    Fecha Examen
+                </label>
+
+                <input
+                    type="date"
+                    name="fecha_examen"
+                    class="form-control"
+                >
+
+            </div>
+
+            <div class="mb-3">
+
+                <label>
+                    Tipo Contrato
+                </label>
+
+                <select
+                    name="tipo_contrato"
+                    class="form-control"
+                >
+
+                    <option>
+                        Término fijo
+                    </option>
+
+                    <option>
+                        Término indefinido
+                    </option>
+
+                    <option>
+                        Prestación servicios
+                    </option>
+
+                </select>
+
+            </div>
+
+            <button class="btn btn-success">
+
+                Guardar Examen
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
