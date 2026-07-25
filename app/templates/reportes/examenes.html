@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Reporte de Exámenes</h2>
+        <a href="{{ url_for('reportes.index') }}" class="btn btn-secondary">Volver</a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label">Tipo de examen</label>
+                    <select name="tipo_examen" class="form-select">
+                        <option value="">-- Todos --</option>
+                        <option value="periodico_ocupacional" {% if tipo_examen == 'periodico_ocupacional' %}selected{% endif %}>Periódico ocupacional</option>
+                        <option value="ingreso" {% if tipo_examen == 'ingreso' %}selected{% endif %}>Ingreso</option>
+                        <option value="egreso" {% if tipo_examen == 'egreso' %}selected{% endif %}>Egreso</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Exámenes encontrados: {{ examenes|length }}</h5>
+            
+            {% if examenes %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Médico</th>
+                            <th>IPS</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for examen in examenes %}
+                        <tr>
+                            <td>{{ examen.fecha_examen }}</td>
+                            <td>{{ examen.tipo_examen }}</td>
+                            <td>{{ examen.medico or 'N/A' }}</td>
+                            <td>{{ examen.ips or 'N/A' }}</td>
+                            <td>
+                                <span class="badge {% if examen.estado == 'finalizado' %}bg-success{% elif examen.estado == 'pendiente' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ examen.estado or 'N/A' }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('examen.detalle', id=examen.id) }}" class="btn btn-sm btn-outline-primary">
+                                    Ver detalle
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No se encontraron exámenes con los criterios de búsqueda.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

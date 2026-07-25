@@ -9,12 +9,21 @@ from datetime import datetime
 from app import db
 
 
-class User(UserMixin, db.Model):
-    """User model with authentication support."""
+class User(db.Model):
+    """User model for system authentication."""
 
     __tablename__ = 'users'
 
+    ROLES = ('admin', 'auxiliar', 'medico')
+
     id = db.Column(db.Integer, primary_key=True)
+
+    username = db.Column(
+        db.String(80),
+        unique=True,
+        nullable=False,
+        index=True
+    )
 
     email = db.Column(
         db.String(120),
@@ -25,18 +34,14 @@ class User(UserMixin, db.Model):
 
     password_hash = db.Column(
         db.String(255),
-        nullable=False
+        nullable=True
     )
 
-    role = db.Column(
+    rol = db.Column(
         db.String(20),
-        default='staff',
+        default='auxiliar',
         nullable=False
     )
-
-    first_name = db.Column(db.String(100))
-
-    last_name = db.Column(db.String(100))
 
     is_active = db.Column(
         db.Boolean,
@@ -54,31 +59,20 @@ class User(UserMixin, db.Model):
         onupdate=datetime.utcnow
     )
 
-    pacientes = db.relationship(
-        'Paciente',
-        backref='user',
-        lazy=True,
-        cascade='all, delete-orphan'
-    )
-
     def set_password(self, password):
         """Hash and set password."""
-
-        self.password_hash = generate_password_hash(password)
+        if password:
+            self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         """Verify password against hash."""
-
-        return check_password_hash(
-            self.password_hash,
-            password
-        )
+        if self.password_hash:
+            return check_password_hash(self.password_hash, password)
+        return False
 
     def is_admin(self):
         """Check if user is admin."""
-
-        return self.role == 'admin'
+        return self.rol == 'admin'
 
     def __repr__(self):
-
-        return f'<User {self.email}>'
+        return f'<User {self.username}>'

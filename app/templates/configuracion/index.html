@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Configuración del Sistema</h2>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Configuraciones Disponibles</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('configuracion.sistema') }}" class="text-decoration-none">
+                                ⚙️ Configuración del Sistema
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('configuracion.perfiles') }}" class="text-decoration-none">
+                                👥 Gestión de Perfiles y Roles
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('configuracion.empleados') }}" class="text-decoration-none">
+                                🧑‍💼 Gestión de Empleados
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Información del Sistema</h5>
+                    <p class="mb-2"><strong>Versión:</strong> 1.0.0</p>
+                    <p class="mb-2"><strong>Institución:</strong> Universidad del Valle</p>
+                    <p class="mb-2"><strong>Sección:</strong> Salud Ocupacional</p>
+                    <p class="mb-0"><strong>Estado:</strong> <span class="badge bg-success">En Operación</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,60 +1,74 @@
-{% extends "base.html" %}
-
-{% block title %}{{ paciente.nombre }}{% endblock %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h2>{{ paciente.nombre }}</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Consulta Integral del Empleado</h2>
+        <p class="text-muted mb-0">Vista directa dentro de Gestión de Empleados para revisar la información del trabajador.</p>
     </div>
-    <div class="col-md-4 text-end">
-        <a href="{{ url_for('pacientes.edit', id=paciente.id) }}" class="btn btn-warning">Editar</a>
-        <a href="{{ url_for('pacientes.list') }}" class="btn btn-secondary">Volver</a>
+    <div>
+        <a href="{{ url_for('empleado.listar') }}" class="btn btn-secondary me-2">Volver</a>
+        <a href="{{ url_for('empleado.editar', id=empleado.id_empleado) }}" class="btn btn-warning">Editar</a>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title mb-4">Información del Paciente</h5>
-                
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Cédula:</strong><br>
-                        {{ paciente.cedula }}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Estado:</strong><br>
-                        <span class="badge bg-{{ 'success' if paciente.estado == 'activo' else 'danger' }}">
-                            {{ paciente.estado }}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Email:</strong><br>
-                        {{ paciente.email or '-' }}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Teléfono:</strong><br>
-                        {{ paciente.telefono or '-' }}
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Fecha de Ingreso:</strong><br>
-                        {{ paciente.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Última Actualización:</strong><br>
-                        {{ paciente.updated_at.strftime('%d/%m/%Y %H:%M') }}
-                    </div>
-                </div>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Información General</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-2"><strong>Cédula:</strong> {{ empleado.cedula }}</p>
+                <p class="mb-2"><strong>Nombre:</strong> {{ empleado.nombres }} {{ empleado.apellidos }}</p>
+                <p class="mb-2"><strong>Correo:</strong> {{ empleado.correo or 'No registrado' }}</p>
+                <p class="mb-2"><strong>Teléfono:</strong> {{ empleado.telefono or 'No registrado' }}</p>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-2"><strong>Estado:</strong> {{ empleado.estado }}</p>
+                <p class="mb-2"><strong>Fecha ingreso:</strong> {{ empleado.fecha_ingreso }}</p>
+                <p class="mb-2"><strong>Fecha retiro:</strong> {{ empleado.fecha_retiro or 'No registrado' }}</p>
+                <p class="mb-2"><strong>EPS/AFP:</strong> {{ empleado.eps and empleado.eps.nombre or empleado.id_eps }} / {{ empleado.afp and empleado.afp.nombre or empleado.id_afp }}</p>
             </div>
         </div>
     </div>
 </div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Historial de Exámenes Ocupacionales</h5>
+                <p class="text-muted mb-0">Aquí se mostrará el registro histórico de exámenes y evaluaciones del trabajador.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Documentos</h5>
+                <p class="text-muted mb-0">Concepto de Aptitud, Consentimiento Informado y otros documentos del trabajador.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Seguimientos</h5>
+                <p class="text-muted mb-0">Sección para revisar seguimientos, observaciones y acciones pendientes.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Registro de novedad</h5>
+                <a href="{{ url_for('examen.crear_para_empleado', empleado_id=empleado.id_empleado) }}" class="btn btn-primary mt-2">Registro de Novedad</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

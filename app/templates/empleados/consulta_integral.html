@@ -1,0 +1,720 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+
+    {% set ns = namespace(sv_total=0, pdf_total=0) %}
+    {% for examen in examenes %}
+        {% if examen.tipo_novedad == 'sistema_vigilancia' %}
+            {% set ns.sv_total = ns.sv_total + 1 %}
+        {% endif %}
+        {% if examen.pdf_eps %}
+            {% set ns.pdf_total = ns.pdf_total + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    {% set exam_periodico = namespace(item=None) %}
+    {% for examen in examenes %}
+        {% if exam_periodico.item is none and examen.tipo_examen and 'period' in examen.tipo_examen|lower %}
+            {% set exam_periodico.item = examen %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="mb-3">
+        <div class="small text-muted fw-semibold">Gestión de Empleados</div>
+        <div class="small text-muted">Consultar</div>
+        <div class="small text-muted">Seleccionar empleado</div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body py-3 text-center">
+            <h4 class="mb-0 fw-bold">PERFIL OCUPACIONAL DEL EMPLEADO</h4>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn active" data-target="info-general">📋 Información General</button>
+            <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="examenes-ocupacionales">🩺 Exámenes Ocupacionales</button>
+            <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="sistemas-vigilancia">🦺 Sistemas de Vigilancia Epidemiológica</button>
+            <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="historia-clinica">📄 Formulario de Historia Clínica Ocupacional</button>
+            <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="documentos">📁 Documentos</button>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="mb-0">{{ empleado.nombres }} {{ empleado.apellidos }}</h2>
+        <div>
+            <a href="{{ url_for('empleado.descargar_historia_pdf', id=empleado.id_empleado) }}" class="btn btn-sm btn-outline-primary me-2">Descargar HC (PDF)</a>
+            <a href="{{ url_for('empleado.descargar_historia', id=empleado.id_empleado) }}" class="btn btn-sm btn-outline-success">Descargar historia completa (ZIP)</a>
+        </div>
+    </div>
+
+    <div id="info-general" class="card shadow-sm mb-4 modulo-vista">
+        <div class="card-body">
+            <h5 class="card-title mb-3">📋 Información General</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Cédula:</strong> {{ empleado.cedula }}</p>
+                    <p class="mb-1"><strong>Nombre:</strong> {{ empleado.nombres }} {{ empleado.apellidos }}</p>
+                    <p class="mb-1"><strong>Estado:</strong> {{ empleado.estado }}</p>
+                    <p class="mb-0"><strong>Correo:</strong> {{ empleado.correo or 'No registrado' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Total exámenes registrados:</strong> {{ examenes|length }}</p>
+                    <p class="mb-1"><strong>Registros en vigilancia:</strong> {{ ns.sv_total }}</p>
+                    <p class="mb-0"><strong>Documentos PDF disponibles:</strong> {{ ns.pdf_total }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="examenes-ocupacionales" class="card shadow-sm mb-4 modulo-vista d-none">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h5 class="card-title mb-0">🩺 Exámenes Ocupacionales</h5>
+                <a href="{{ url_for('examen.crear_para_empleado', empleado_id=empleado.id_empleado) }}" class="btn btn-primary btn-sm">Registrar Novedad</a>
+            </div>
+
+            {% if examenes %}
+                <ul class="list-group list-group-flush">
+                    {% for examen in examenes %}
+                    <li class="list-group-item py-2 d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <strong>{{ examen.fecha_examen }}</strong> - {{ examen.tipo_examen }}
+                            <div class="small text-muted">{{ examen.concepto_medico or 'Sin motivo' }} | IPS: {{ examen.ips or 'N/A' }}</div>
+                        </div>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a href="{{ url_for('examen.detalle', id=examen.id) }}" class="btn btn-sm btn-outline-primary">Ver detalle</a>
+                            <a href="{{ url_for('examen.descargar_examen_pdf', id=examen.id) }}" class="btn btn-sm btn-outline-secondary" title="Descargar PDF">PDF Examen</a>
+                            {% if examen.pdf_eps %}
+                                <a href="{{ url_for('examen.pdf_file', filename=examen.pdf_eps) }}" class="btn btn-sm btn-outline-secondary">PDF EPS</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">No se han registrado exámenes para este trabajador.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="sistemas-vigilancia" class="card shadow-sm mb-4 modulo-vista d-none">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h5 class="card-title mb-0">🦺 Sistemas de Vigilancia Epidemiológica</h5>
+                <a href="{{ url_for('examen.crear_para_empleado', empleado_id=empleado.id_empleado) }}" class="btn btn-sm btn-primary">➕ Asignar Programa de Vigilancia</a>
+            </div>
+            {% if ns.sv_total > 0 %}
+                <p class="mb-2">Este empleado cuenta con <strong>{{ ns.sv_total }}</strong> registro(s) asociado(s) a sistema de vigilancia epidemiológica.</p>
+                <p class="text-muted mb-0">Puedes revisar cada registro en la sección de exámenes ocupacionales desde el botón "Ver detalle".</p>
+            {% else %}
+                <p class="text-muted mb-0">No hay registros de vigilancia epidemiológica asociados actualmente.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="historia-clinica" class="card shadow-sm mb-4 modulo-vista d-none">
+        <div class="card-body">
+            <h5 class="card-title mb-3">📄 Formulario de Historia Clínica Ocupacional</h5>
+            <p class="mb-3">Diligencia la historia clínica ocupacional por secciones y guarda el registro directamente para este empleado.</p>
+
+            <form method="POST" action="{{ url_for('examen.crear_para_empleado', empleado_id=empleado.id_empleado) }}" enctype="multipart/form-data" id="hc_form">
+                <input type="hidden" name="tipo_novedad" value="periodico_ocupacional">
+                <input type="hidden" name="estado_novedad" value="finalizado">
+                <textarea name="observaciones" id="hc_observaciones_payload" class="d-none"></textarea>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 1. Datos de Registro y Contractuales</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha de evaluación</label>
+                            <input type="date" name="fecha_novedad" class="form-control hc-observable" data-label="Fecha de evaluación" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha del examen</label>
+                            <input type="date" name="fecha_examen" class="form-control hc-observable" data-label="Fecha del examen" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tiempo en el cargo actual</label>
+                            <input type="text" name="hc_tiempo_cargo" class="form-control hc-observable" data-label="Tiempo en el cargo actual">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha de ingreso a Univalle</label>
+                            <input type="date" name="hc_fecha_ingreso_univalle" class="form-control hc-observable" data-label="Fecha de ingreso a Univalle">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Cargo actual</label>
+                            <input type="text" name="hc_cargo_actual" class="form-control hc-observable" data-label="Cargo actual">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Espacio asignado</label>
+                            <input type="text" name="hc_espacio_asignado" class="form-control hc-observable" data-label="Espacio asignado">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Dependencia</label>
+                            <input type="text" name="hc_dependencia" class="form-control hc-observable" data-label="Dependencia">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estamento</label>
+                            <input type="text" name="hc_estamento" class="form-control hc-observable" data-label="Estamento">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo de contrato</label>
+                            <select name="tipo_contrato" class="form-select hc-observable" data-label="Tipo de contrato">
+                                <option value="">-- Seleccione --</option>
+                                <option value="contratista">Contratista</option>
+                                <option value="provisional">Provisional</option>
+                                <option value="docente">Docente</option>
+                                <option value="docente_hora_catedra">Docente hora cátedra</option>
+                                <option value="oficial">Oficial</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Escolaridad</label>
+                            <input type="text" name="hc_escolaridad" class="form-control hc-observable" data-label="Escolaridad">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Profesión</label>
+                            <input type="text" name="hc_profesion" class="form-control hc-observable" data-label="Profesión">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Cargos ocupados</label>
+                            <input type="text" name="hc_cargos_ocupados" class="form-control hc-observable" data-label="Cargos ocupados">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Jefe inmediato</label>
+                            <input type="text" name="hc_jefe_inmediato" class="form-control hc-observable" data-label="Jefe inmediato">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Cargo</label>
+                            <input type="text" name="hc_cargo_jefe" class="form-control hc-observable" data-label="Cargo">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Correo electrónico del Jefe</label>
+                            <input type="email" name="hc_correo_jefe" class="form-control hc-observable" data-label="Correo electrónico del Jefe">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">EPS</label>
+                            <input type="text" name="eps" class="form-control hc-observable" data-label="EPS">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">AFP</label>
+                            <input type="text" name="hc_afp" class="form-control hc-observable" data-label="AFP">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">ARL</label>
+                            <input type="text" name="hc_arl" class="form-control hc-observable" data-label="ARL">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 2. Antecedentes Ocupacionales</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Empresa</label>
+                            <input type="text" name="hc_ant_empresa" class="form-control hc-observable" data-label="Antecedente ocupacional - Empresa">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cargo</label>
+                            <input type="text" name="hc_ant_cargo" class="form-control hc-observable" data-label="Antecedente ocupacional - Cargo">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Peligros expuestos</label>
+                            <input type="text" name="hc_ant_peligros" class="form-control hc-observable" data-label="Peligros expuestos">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" name="hc_ant_fecha" class="form-control hc-observable" data-label="Antecedente ocupacional - Fecha">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">EPP</label>
+                            <input type="text" name="hc_ant_epp" class="form-control hc-observable" data-label="EPP">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-3">Accidentes de trabajo y/o EL</h6>
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label">AT</label>
+                            <select name="hc_accidente_at" class="form-select hc-observable" data-label="Accidente de trabajo">
+                                <option value="">--</option>
+                                <option value="si">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">EL</label>
+                            <select name="hc_accidente_el" class="form-select hc-observable" data-label="Enfermedad laboral">
+                                <option value="">--</option>
+                                <option value="si">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" name="hc_accidente_fecha" class="form-control hc-observable" data-label="AT/EL - Fecha">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Empresa</label>
+                            <input type="text" name="hc_accidente_empresa" class="form-control hc-observable" data-label="AT/EL - Empresa">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Días incapacidad</label>
+                            <input type="number" min="0" name="hc_accidente_dias" class="form-control hc-observable" data-label="AT/EL - Días incapacidad">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="hc_accidente_descripcion" class="form-control hc-observable" data-label="AT/EL - Descripción" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Dx</label>
+                            <input type="text" name="hc_accidente_dx" class="form-control hc-observable" data-label="AT/EL - Dx">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Secuela</label>
+                            <input type="text" name="hc_accidente_secuela" class="form-control hc-observable" data-label="AT/EL - Secuela">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 3. Antecedentes Médicos</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Antecedentes familiares (enfermedad y parentesco)</label>
+                            <textarea name="hc_ant_familiares" class="form-control hc-observable" data-label="Antecedentes familiares" rows="4" placeholder="Hipertensión - Padre, Diabetes - Madre, etc."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Observaciones antecedentes familiares</label>
+                            <textarea name="hc_ant_familiares_obs" class="form-control hc-observable" data-label="Observaciones antecedentes familiares" rows="4"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes patológicos</label>
+                            <textarea name="hc_ant_patologicos" class="form-control hc-observable" data-label="Antecedentes patológicos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes neurológicos</label>
+                            <textarea name="hc_ant_neurologicos" class="form-control hc-observable" data-label="Antecedentes neurológicos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes psiquiátricos</label>
+                            <textarea name="hc_ant_psiquiatricos" class="form-control hc-observable" data-label="Antecedentes psiquiátricos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes quirúrgicos</label>
+                            <textarea name="hc_ant_quirurgicos" class="form-control hc-observable" data-label="Antecedentes quirúrgicos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes traumáticos</label>
+                            <textarea name="hc_ant_traumaticos" class="form-control hc-observable" data-label="Antecedentes traumáticos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes alérgicos</label>
+                            <textarea name="hc_ant_alergicos" class="form-control hc-observable" data-label="Antecedentes alérgicos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes farmacológicos</label>
+                            <textarea name="hc_ant_farmacologicos" class="form-control hc-observable" data-label="Antecedentes farmacológicos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes ginecoobstétricos</label>
+                            <textarea name="hc_ant_gineco" class="form-control hc-observable" data-label="Antecedentes ginecoobstétricos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Antecedentes inmunológicos</label>
+                            <textarea name="hc_ant_inmunologicos" class="form-control hc-observable" data-label="Antecedentes inmunológicos" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 4. Hábitos</h6>
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label">Fuma</label>
+                            <select name="hc_habito_fuma" class="form-select hc-observable" data-label="Fuma">
+                                <option value="">--</option>
+                                <option value="si">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Fumaba</label>
+                            <select name="hc_habito_fumaba" class="form-select hc-observable" data-label="Fumaba">
+                                <option value="">--</option>
+                                <option value="si">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Cigarrillos/día</label>
+                            <input type="number" min="0" name="hc_habito_cigarrillos" class="form-control hc-observable" data-label="Número de cigarrillos por día">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Total años</label>
+                            <input type="number" min="0" name="hc_habito_anios" class="form-control hc-observable" data-label="Total años de tabaquismo">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Consume alcohol</label>
+                            <select name="hc_habito_alcohol" class="form-select hc-observable" data-label="Consume alcohol">
+                                <option value="">--</option>
+                                <option value="si">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Medio transporte</label>
+                            <input type="text" name="hc_habito_transporte" class="form-control hc-observable" data-label="Medio de transporte">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Actividad cultural</label>
+                            <input type="text" name="hc_habito_cultural" class="form-control hc-observable" data-label="Actividad cultural">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Actividad deportiva</label>
+                            <input type="text" name="hc_habito_deportiva" class="form-control hc-observable" data-label="Actividad deportiva">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Actividad extralaboral</label>
+                            <input type="text" name="hc_habito_extralaboral" class="form-control hc-observable" data-label="Actividad extralaboral">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 5. Revisión por Sistemas</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Respiratorio superior</label><textarea name="hc_rev_resp_sup" class="form-control hc-observable" data-label="Respiratorio superior" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Respiratorio inferior</label><textarea name="hc_rev_resp_inf" class="form-control hc-observable" data-label="Respiratorio inferior" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Cardiovascular</label><textarea name="hc_rev_cardio" class="form-control hc-observable" data-label="Cardiovascular" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Digestivo</label><textarea name="hc_rev_digestivo" class="form-control hc-observable" data-label="Digestivo" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Genitourinario</label><textarea name="hc_rev_genito" class="form-control hc-observable" data-label="Genitourinario" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Osteomuscular</label><textarea name="hc_rev_osteo" class="form-control hc-observable" data-label="Osteomuscular" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Neurológico</label><textarea name="hc_rev_neuro" class="form-control hc-observable" data-label="Neurológico" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Cognitivo</label><textarea name="hc_rev_cognitivo" class="form-control hc-observable" data-label="Cognitivo" rows="2"></textarea></div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 6. Examen Físico</h6>
+                    <div class="row g-3">
+                        <div class="col-md-2"><label class="form-label">TA</label><input type="text" name="hc_ef_ta" class="form-control hc-observable" data-label="TA"></div>
+                        <div class="col-md-2"><label class="form-label">FC</label><input type="text" name="hc_ef_fc" class="form-control hc-observable" data-label="FC"></div>
+                        <div class="col-md-2"><label class="form-label">FR</label><input type="text" name="hc_ef_fr" class="form-control hc-observable" data-label="FR"></div>
+                        <div class="col-md-2"><label class="form-label">T</label><input type="text" name="hc_ef_t" class="form-control hc-observable" data-label="Temperatura"></div>
+                        <div class="col-md-2"><label class="form-label">Peso</label><input type="text" name="hc_ef_peso" class="form-control hc-observable" data-label="Peso"></div>
+                        <div class="col-md-2"><label class="form-label">Talla</label><input type="text" name="hc_ef_talla" class="form-control hc-observable" data-label="Talla"></div>
+                        <div class="col-md-2"><label class="form-label">IMC</label><input type="text" name="hc_ef_imc" class="form-control hc-observable" data-label="IMC"></div>
+                        <div class="col-md-3"><label class="form-label">Dominancia</label><select name="hc_ef_dominancia" class="form-select hc-observable" data-label="Dominancia"><option value="">--</option><option>Diestro</option><option>Zurdo</option><option>Ambidiestro</option></select></div>
+                        <div class="col-md-3"><label class="form-label">Perímetro abdominal</label><input type="text" name="hc_ef_perimetro" class="form-control hc-observable" data-label="Perímetro abdominal"></div>
+                        <div class="col-md-4"><label class="form-label">Médico evaluador (examen físico)</label><input type="text" name="hc_medico_ef" class="form-control hc-observable" data-label="Médico evaluador (examen físico)"></div>
+                        <div class="col-md-12"><label class="form-label">Cabeza y cuello</label><textarea name="hc_ef_cabeza" class="form-control hc-observable" data-label="Cabeza y cuello" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Tórax cardiopulmonar</label><textarea name="hc_ef_torax" class="form-control hc-observable" data-label="Tórax cardiopulmonar" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Abdomen</label><textarea name="hc_ef_abdomen" class="form-control hc-observable" data-label="Abdomen" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Extremidades superiores</label><textarea name="hc_ef_ext_sup" class="form-control hc-observable" data-label="Extremidades superiores" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Extremidades inferiores</label><textarea name="hc_ef_ext_inf" class="form-control hc-observable" data-label="Extremidades inferiores" rows="2"></textarea></div>
+                        <div class="col-md-4"><label class="form-label">Genitales</label><textarea name="hc_ef_genitales" class="form-control hc-observable" data-label="Genitales" rows="2"></textarea></div>
+                        <div class="col-md-4"><label class="form-label">Vascular periférico</label><textarea name="hc_ef_vascular" class="form-control hc-observable" data-label="Vascular periférico" rows="2"></textarea></div>
+                        <div class="col-md-4"><label class="form-label">Sistema nervioso central</label><textarea name="hc_ef_snc" class="form-control hc-observable" data-label="Sistema nervioso central" rows="2"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Columna</label><textarea name="hc_ef_columna" class="form-control hc-observable" data-label="Columna" rows="2"></textarea></div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 7. Valoraciones Interdisciplinarias</h6>
+                    <div class="row g-3">
+                        <div class="col-12"><h6 class="mb-2">Terapia ocupacional</h6></div>
+                        <div class="col-md-6"><label class="form-label">Componente osteomuscular</label><textarea name="hc_to_osteo" class="form-control hc-observable" data-label="TO - Componente osteomuscular" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Componente sensorial</label><textarea name="hc_to_sensorial" class="form-control hc-observable" data-label="TO - Componente sensorial" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Áreas ocupacionales</label><textarea name="hc_to_areas" class="form-control hc-observable" data-label="TO - Áreas ocupacionales" rows="2"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">AVD básicas</label><textarea name="hc_to_avd_basicas" class="form-control hc-observable" data-label="TO - AVD básicas" rows="2"></textarea></div>
+                        <div class="col-md-3"><label class="form-label">Índice Barthel</label><input type="number" min="0" max="100" name="hc_to_barthel" class="form-control hc-observable" data-label="Índice Barthel"></div>
+                        <div class="col-md-3"><label class="form-label">Grado dependencia</label><select name="hc_to_dependencia" class="form-select hc-observable" data-label="Grado de dependencia"><option value="">--</option><option>Dependencia total</option><option>Dependencia grave</option><option>Dependencia moderada</option><option>Dependencia leve</option><option>Independiente</option></select></div>
+                        <div class="col-md-6"><label class="form-label">AVD instrumentales/productivas/ocio</label><textarea name="hc_to_otras" class="form-control hc-observable" data-label="TO - Otras AVD" rows="2"></textarea></div>
+
+                        <div class="col-12"><hr><h6 class="mb-2">Fisioterapia</h6></div>
+                        <div class="col-md-6"><label class="form-label">Rangos de movilidad articular</label><textarea name="hc_fisio_rom" class="form-control hc-observable" data-label="Fisioterapia - ROM" rows="3" placeholder="Hombro, codo, muñeca, mano, cadera, rodilla, tobillo"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Fuerza muscular (MMT)</label><textarea name="hc_fisio_mmt" class="form-control hc-observable" data-label="Fisioterapia - MMT" rows="3"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Capacidades funcionales actuales</label><textarea name="hc_fisio_capacidades" class="form-control hc-observable" data-label="Fisioterapia - Capacidades funcionales" rows="2" placeholder="Deambulación, escaleras, manipulación, permanencia de pie/sentado, levantamiento de cargas"></textarea></div>
+
+                        <div class="col-12"><hr><h6 class="mb-2">Psicología</h6></div>
+                        <div class="col-md-12"><label class="form-label">Valoración psicológica</label><textarea name="hc_psico_valoracion" class="form-control hc-observable" data-label="Valoración psicológica" rows="3"></textarea></div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 8. Exámenes de Laboratorio e Impresión Diagnóstica</h6>
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Exámenes de laboratorio (examen, fecha, descripción)</label>
+                            <textarea name="hc_labs" class="form-control hc-observable" data-label="Exámenes de laboratorio" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Diagnóstico</label>
+                            <textarea name="hc_dx" class="form-control hc-observable" data-label="Diagnóstico" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">CIE10</label>
+                            <input type="text" name="hc_cie10" class="form-control hc-observable" data-label="CIE10">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Relación trabajo</label>
+                            <select name="hc_rel_trabajo" class="form-select hc-observable" data-label="Relación con el trabajo"><option value="">--</option><option>Si</option><option>No</option></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Secuela AT/EL</label>
+                            <select name="hc_secuela_atel" class="form-select hc-observable" data-label="Secuela de AT/EL"><option value="">--</option><option>Si</option><option>No</option></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3" id="hc_periodico_section">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 9. Análisis y Plan</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Concepto ocupacional</label>
+                            <textarea name="hc_concepto_ocupacional" class="form-control hc-observable" data-label="Concepto ocupacional" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Concepto funcional</label>
+                            <textarea name="hc_concepto_funcional" class="form-control hc-observable" data-label="Concepto funcional" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Concepto psicosocial</label>
+                            <textarea name="hc_concepto_psicosocial" class="form-control hc-observable" data-label="Concepto psicosocial" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Concepto médico de aptitud laboral</label>
+                            <select name="concepto_de_aptitud" class="form-select hc-observable" data-label="Concepto médico de aptitud laboral">
+                                <option value="">-- Seleccione --</option>
+                                <option value="apto">Apto</option>
+                                <option value="apto">Apto con recomendación</option>
+                                <option value="apto_con_restricciones">Apto con restricción</option>
+                                <option value="pendiente">Aplazado temporalmente</option>
+                                <option value="no_apto">No apto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Próximo control</label>
+                            <input type="date" name="fecha_nuevo_control" class="form-control hc-observable" data-label="Próximo control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Restricciones</label>
+                            <textarea name="restricciones_medicas" class="form-control hc-observable" data-label="Restricciones" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Recomendaciones generales</label>
+                            <textarea name="recomendaciones_medicas" class="form-control hc-observable" data-label="Recomendaciones generales" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3 d-none" id="hc_sv_section">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 10. Sistema de Vigilancia Epidemiológica</h6>
+                    <label class="form-label">Riesgos asociados</label>
+                    <div class="row">
+                        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="riesgo[]" value="quimico" id="hc_riesgo_quimico"><label class="form-check-label" for="hc_riesgo_quimico">Químico</label></div></div>
+                        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="riesgo[]" value="psicosocial" id="hc_riesgo_psicosocial"><label class="form-check-label" for="hc_riesgo_psicosocial">Psicosocial</label></div></div>
+                        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="riesgo[]" value="ruido" id="hc_riesgo_ruido"><label class="form-check-label" for="hc_riesgo_ruido">Ruido</label></div></div>
+                        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="riesgo[]" value="visual" id="hc_riesgo_visual"><label class="form-check-label" for="hc_riesgo_visual">Visual</label></div></div>
+                        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="riesgo[]" value="biomecanico" id="hc_riesgo_biomecanico"><label class="form-check-label" for="hc_riesgo_biomecanico">Biomecánico</label></div></div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3 d-none" id="hc_eps_section">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 11. Solicitud EPS</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Especialidad solicitada</label>
+                            <select name="especialidad_eps" class="form-select hc-observable" data-label="Especialidad solicitada EPS">
+                                <option value="">-- Seleccione especialidad --</option>
+                                <option value="medicina_general">Medicina General</option>
+                                <option value="medicina_ocupacional">Medicina Ocupacional</option>
+                                <option value="otorrino">Otorrinolaringología</option>
+                                <option value="oftalmologia">Oftalmología</option>
+                                <option value="psicologia">Psicología</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Adjuntar documento PDF</label>
+                            <input type="file" name="pdf_eps" accept="application/pdf" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Observaciones EPS</label>
+                            <textarea name="observaciones_eps" class="form-control hc-observable" data-label="Observaciones EPS" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3 d-none" id="hc_otro_section">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 12. Otra Novedad</h6>
+                    <label class="form-label">Descripción de la novedad</label>
+                    <textarea name="descripcion_otro" class="form-control hc-observable" data-label="Descripción otra novedad" rows="3"></textarea>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 13. Firmas y Cierre</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Profesional médico laboral</label><input type="text" name="hc_firma_medico" class="form-control hc-observable" data-label="Firma médico laboral"></div>
+                        <div class="col-md-6"><label class="form-label">Licencia médico</label><input type="text" name="hc_lic_medico" class="form-control hc-observable" data-label="Licencia médico"></div>
+                        <div class="col-md-6"><label class="form-label">Profesional terapeuta ocupacional</label><input type="text" name="hc_firma_to" class="form-control hc-observable" data-label="Firma terapeuta ocupacional"></div>
+                        <div class="col-md-6"><label class="form-label">Licencia terapeuta ocupacional</label><input type="text" name="hc_lic_to" class="form-control hc-observable" data-label="Licencia terapeuta ocupacional"></div>
+                        <div class="col-md-6"><label class="form-label">Profesional fisioterapeuta</label><input type="text" name="hc_firma_fisio" class="form-control hc-observable" data-label="Firma fisioterapeuta"></div>
+                        <div class="col-md-6"><label class="form-label">Licencia fisioterapeuta</label><input type="text" name="hc_lic_fisio" class="form-control hc-observable" data-label="Licencia fisioterapeuta"></div>
+                        <div class="col-md-6"><label class="form-label">Profesional psicología</label><input type="text" name="hc_firma_psico" class="form-control hc-observable" data-label="Firma psicología"></div>
+                        <div class="col-md-6"><label class="form-label">Licencia psicología</label><input type="text" name="hc_lic_psico" class="form-control hc-observable" data-label="Licencia psicología"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">Guardar Historia Clínica</button>
+                        {% if exam_periodico.item %}
+                            <a href="{{ url_for('examen.detalle', id=exam_periodico.item.id) }}" class="btn btn-outline-primary btn-sm">Consultar Historia Clínica</a>
+                            <a href="{{ url_for('examen.detalle', id=exam_periodico.item.id) }}" class="btn btn-outline-warning btn-sm">Editar Historia Clínica</a>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('empleado.descargar_historia_pdf', id=empleado.id_empleado) }}" class="btn btn-outline-secondary btn-sm">Descargar HC (PDF)</a>
+                        <a href="{{ url_for('empleado.descargar_historia', id=empleado.id_empleado) }}" class="btn btn-outline-secondary btn-sm">Descargar historia completa (ZIP)</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="documentos" class="card shadow-sm mb-4 modulo-vista d-none">
+        <div class="card-body">
+            <h5 class="card-title mb-3">📁 Documentos</h5>
+            {% set docs = namespace(list=[]) %}
+            {% for examen in examenes %}
+                {% if examen.pdf_eps %}
+                    {% set _ = docs.list.append(examen) %}
+                {% endif %}
+            {% endfor %}
+            {% if docs.list %}
+                <ul class="list-group list-group-flush">
+                    {% for examen_doc in docs.list %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <strong>{{ examen_doc.fecha_examen }}</strong>
+                            <div class="small text-muted">{{ examen_doc.tipo_examen or 'Documento de soporte' }}</div>
+                        </div>
+                        <a href="{{ url_for('examen.pdf_file', filename=examen_doc.pdf_eps) }}" class="btn btn-sm btn-outline-primary">Ver documento</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">No hay documentos adjuntos para este empleado.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <a href="{{ url_for('empleado.listar') }}" class="btn btn-outline-secondary">Volver a listado</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const buttons = document.querySelectorAll('.nav-modulo-btn');
+    const views = document.querySelectorAll('.modulo-vista');
+
+    function showView(targetId) {
+        views.forEach(function (view) {
+            view.classList.add('d-none');
+        });
+
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.classList.remove('d-none');
+        }
+
+        buttons.forEach(function (btn) {
+            btn.classList.remove('active');
+        });
+
+        const activeBtn = document.querySelector('.nav-modulo-btn[data-target="' + targetId + '"]');
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+    }
+
+    buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            const targetId = button.getAttribute('data-target');
+            showView(targetId);
+        });
+    });
+
+    showView('info-general');
+
+    const hcTipoNovedad = document.getElementById('hc_tipo_novedad');
+    const hcSvSection = document.getElementById('hc_sv_section');
+    const hcEpsSection = document.getElementById('hc_eps_section');
+    const hcOtroSection = document.getElementById('hc_otro_section');
+
+    function updateHistoriaSections() {
+        if (!hcTipoNovedad) {
+            return;
+        }
+
+        const value = hcTipoNovedad.value;
+
+        if (hcSvSection) {
+            hcSvSection.classList.toggle('d-none', value !== 'sistema_vigilancia');
+        }
+
+        if (hcEpsSection) {
+            hcEpsSection.classList.toggle('d-none', value !== 'solicitado_eps');
+        }
+
+        if (hcOtroSection) {
+            hcOtroSection.classList.toggle('d-none', value !== 'otro');
+        }
+    }
+
+    if (hcTipoNovedad) {
+        hcTipoNovedad.addEventListener('change', updateHistoriaSections);
+        updateHistoriaSections();
+    }
+
+    const hcForm = document.getElementById('hc_form');
+    const hcObsPayload = document.getElementById('hc_observaciones_payload');
+
+    if (hcForm && hcObsPayload) {
+        hcForm.addEventListener('submit', function () {
+            const lines = [];
+            const fields = hcForm.querySelectorAll('.hc-observable');
+
+            fields.forEach(function (field) {
+                const label = field.getAttribute('data-label');
+                let value = '';
+
+                if (field.tagName === 'SELECT' || field.tagName === 'TEXTAREA' || field.tagName === 'INPUT') {
+                    value = (field.value || '').trim();
+                }
+
+                if (label && value) {
+                    lines.push(label + ': ' + value);
+                }
+            });
+
+            const riesgos = Array.from(hcForm.querySelectorAll('input[name="riesgo[]"]:checked'))
+                .map(function (el) { return el.value; });
+
+            if (riesgos.length > 0) {
+                lines.push('Riesgos SVE: ' + riesgos.join(', '));
+            }
+
+            hcObsPayload.value = lines.join('\n');
+        });
+    }
+});
+</script>
+{% endblock %}

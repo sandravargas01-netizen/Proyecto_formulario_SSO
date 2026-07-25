@@ -6,7 +6,7 @@ from wtforms import (
     SubmitField
 )
 
-from wtforms.validators import DataRequired
+from forms.validators import DataRequired
 
 
 class PacienteForm(FlaskForm):

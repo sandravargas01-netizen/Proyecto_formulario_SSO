@@ -1,29 +1,15 @@
-from flask import Flask, redirect
-from flask_sqlalchemy import SQLAlchemy
+# ===== TABLAS MAESTRAS =====
 
-db = SQLAlchemy()
+from app.models.maestros.afp import AFP
+from app.models.maestros.eps import EPS
+from app.models.maestros.cargo import Cargo
+from app.models.maestros.centro_costo import CentroCosto
+from app.models.maestros.dependencia import Dependencia
+from app.models.maestros.estamento import Estamento
+from app.models.maestros.vinculacion import Vinculacion
 
+# ===== TABLAS TRANSACCIONALES =====
 
-def create_app():
-
-    app = Flask(__name__)
-
-    from app.config import DevelopmentConfig
-
-    app.config.from_object(DevelopmentConfig)
-
-    db.init_app(app)
-
-    from app.routes.auth_routes import auth_bp
-    from Proyecto_formulario_SSO.app.routes.empleado_routes import paciente_bp
-    from app.routes.admin_routes import admin_bp
-
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(paciente_bp)
-    app.register_blueprint(admin_bp)
-
-    @app.route("/")
-    def home():
-        return redirect("/pacientes/")
-
-    return app
+from app.models.transaccionales.empleado import Empleado
+from app.models.transaccionales.examen import Examen
+#from app.models.transaccionales.seguimiento import Seguimiento

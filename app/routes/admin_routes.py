@@ -3,8 +3,8 @@ from flask import (
     render_template
 )
 
-from app.models.empleados import Empleado
-from app.models.examen import Examen
+from app.models.transaccionales.empleado import Empleado
+from app.models.transaccionales.examen import Examen
 
 
 admin_bp = Blueprint(
@@ -35,7 +35,7 @@ def dashboard():
 
     return render_template(
 
-        "admin/dashboard.html",
+        "dashboard/dashboard.html",
 
         total_empleados=total_empleados,
 

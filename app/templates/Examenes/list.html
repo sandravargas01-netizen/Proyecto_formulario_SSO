@@ -33,6 +33,10 @@
 
                     <th>Fecha</th>
 
+                    <th>Tipo Ingreso</th>
+
+                    <th>Próximo Control</th>
+
                     <th>Tipo Contrato</th>
 
                 </tr>
@@ -55,6 +59,14 @@
 
                     <td>
                         {{ examen.fecha_examen }}
+                    </td>
+
+                    <td>
+                        {{ examen.tipo_ingreso }}
+                    </td>
+
+                    <td>
+                        {{ examen.fecha_nuevo_control or '-' }}
                     </td>
 
                     <td>

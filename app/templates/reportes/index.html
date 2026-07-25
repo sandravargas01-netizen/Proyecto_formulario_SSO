@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Reportes</h2>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="text-primary mb-2">{{ total_empleados }}</h4>
+                    <p class="text-muted mb-0">Total de Empleados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="text-info mb-2">{{ empleados_activos }}</h4>
+                    <p class="text-muted mb-0">Empleados Activos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="text-success mb-2">{{ total_examenes }}</h4>
+                    <p class="text-muted mb-0">Total de Exámenes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Reportes Disponibles</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('reportes.empleados') }}" class="text-decoration-none">
+                                📊 Reporte de Empleados
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('reportes.examenes') }}" class="text-decoration-none">
+                                📋 Reporte de Exámenes
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

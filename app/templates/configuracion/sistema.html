@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Configuración del Sistema</h2>
+        <a href="{{ url_for('configuracion.index') }}" class="btn btn-secondary">Volver</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Parámetros Generales</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la Institución</label>
+                            <input type="text" class="form-control" value="Universidad del Valle" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la Sección</label>
+                            <input type="text" class="form-control" value="Salud Ocupacional" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correo de Contacto</label>
+                            <input type="email" class="form-control" placeholder="contacto@univalle.edu.co">
+                        </div>
+                        <button type="submit" class="btn btn-primary" disabled>Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Información del Sistema</h5>
+                    <p class="mb-2"><strong>Versión:</strong> 1.0.0</p>
+                    <p class="mb-2"><strong>Base de Datos:</strong> SQLite</p>
+                    <p class="mb-2"><strong>Framework:</strong> Flask</p>
+                    <p class="mb-2"><strong>Estado del Sistema:</strong> <span class="badge bg-success">Operativo</span></p>
+                    <p class="mb-0"><strong>Última Actualización:</strong> 2024</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

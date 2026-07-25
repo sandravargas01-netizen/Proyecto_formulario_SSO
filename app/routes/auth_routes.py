@@ -3,8 +3,12 @@ from flask import (
     render_template,
     request,
     redirect,
-    session
+    session,
+    flash,
+    url_for
 )
+
+from app.models.transaccionales.user import User
 
 auth_bp = Blueprint(
     "auth",
@@ -25,43 +29,38 @@ def login():
 
     if request.method == "POST":
 
-        email = request.form["email"]
+        email = request.form["email"].strip().lower()
 
         password = request.form["password"]
 
-        # =========================
-        # ADMIN
-        # =========================
-        if (
-            email == "admin@gmail.com"
-            and
-            password == "123"
-        ):
+        usuario = User.query.filter_by(email=email).first()
 
-            session["usuario"] = email
+        if usuario and usuario.check_password(password):
 
-            session["rol"] = "admin"
+            if not usuario.is_active:
+                flash(
+                    "El usuario está inactivo. Contacte al administrador.",
+                    "warning"
+                )
+                return redirect(url_for("auth.login"))
 
-            return redirect(
-                "/admin/dashboard"
-            )
+            session["usuario"] = usuario.username
 
-        # =========================
-        # AUXILIAR
-        # =========================
-        if (
-            email == "auxiliar@gmail.com"
-            and
-            password == "123"
-        ):
+            session["rol"] = usuario.rol
 
-            session["usuario"] = email
-
-            session["rol"] = "auxiliar"
+            if usuario.rol == "admin":
+                return redirect(
+                    "/admin/dashboard"
+                )
 
             return redirect(
                 "/empleados/"
             )
+
+        flash(
+            "Email o contraseña incorrectos.",
+            "danger"
+        )
 
     return render_template(
         "auth/login.html"
@@ -82,22 +81,15 @@ def recuperar_password():
 
     if request.method == "POST":
 
-        email = request.form["email"]
+        email = request.form["email"].strip().lower()
 
-        # VALIDAR CORREOS EXISTENTES
-        if (
-            email == "admin@gmail.com"
-            or
-            email == "auxiliar@gmail.com"
-        ):
+        usuario = User.query.filter_by(email=email).first()
 
+        if usuario:
             mensaje = (
-                "Se envió un enlace de recuperación "
-                "al correo ingresado."
+                "Se envió un enlace de recuperación al correo ingresado."
             )
-
         else:
-
             mensaje = (
                 "El correo no existe en el sistema."
             )

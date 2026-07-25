@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Detalle de Examen Ocupacional</h2>
+            <p class="text-muted mb-0">Revisa la información completa del examen y la historia ocupacional vinculada.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('examen.descargar_examen_pdf', id=examen.id) }}" class="btn btn-outline-primary me-2" title="Descargar este examen en PDF">
+                <i class="bi bi-file-pdf"></i> Descargar PDF
+            </a>
+            {% if empleado %}
+            <a href="{{ url_for('empleado.consulta_integral', id=empleado.id_empleado) }}" class="btn btn-secondary">Volver</a>
+            {% else %}
+            <a href="{{ url_for('examen.listar') }}" class="btn btn-secondary">Volver</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Resumen de Examen</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-2"><strong>Tipo de novedad:</strong> {{ tipo_novedad_label }}</p>
+                    <p class="mb-2"><strong>Fecha:</strong> {{ examen.fecha_examen }}</p>
+                    <p class="mb-2"><strong>IPS:</strong> {{ examen.ips or 'No registrado' }}</p>
+                    <p class="mb-2"><strong>Médico:</strong> {{ examen.medico or 'No registrado' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-2"><strong>Motivo:</strong> {{ examen.concepto_medico or 'No registrado' }}</p>
+                    <p class="mb-2"><strong>Estado:</strong> {{ novedad_metadata.estado_novedad or examen.estado or 'No registrado' }}</p>
+                    {% if empleado %}
+                    <p class="mb-2"><strong>Empleado:</strong> {{ empleado.nombres }} {{ empleado.apellidos }}</p>
+                    <p class="mb-2"><strong>Cédula:</strong> {{ empleado.cedula }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if tipo_novedad == 'sistema_vigilancia' or tipo_novedad == 'solicitado_eps' or tipo_novedad == 'otro' %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Detalle de la Novedad</h5>
+
+            {% if tipo_novedad == 'sistema_vigilancia' %}
+                <p class="mb-3"><strong>Programa:</strong> {{ tipo_novedad_label }}</p>
+                <p class="mb-2"><strong>Riesgos asociados:</strong></p>
+                {% if novedad_metadata.riesgos %}
+                <div>
+                    {% for riesgo in novedad_metadata.riesgos %}
+                    <span class="badge bg-info text-dark me-1 mb-1">{{ riesgo | replace('_', ' ') | title }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No se registraron riesgos asociados.</p>
+                {% endif %}
+            {% elif tipo_novedad == 'solicitado_eps' %}
+                <p class="mb-2"><strong>Especialidad solicitada:</strong> {{ novedad_metadata.especialidad_eps | replace('_', ' ') | title if novedad_metadata.especialidad_eps else 'No registrada' }}</p>
+                <p class="mb-2"><strong>Observaciones EPS:</strong> {{ novedad_metadata.observaciones_eps or 'No registradas' }}</p>
+                {% if novedad_metadata.archivo_pdf_eps %}
+                <a href="{{ url_for('examen.pdf_file', filename=novedad_metadata.archivo_pdf_eps) }}" class="btn btn-outline-secondary btn-sm mt-2">
+                    Descargar soporte PDF EPS
+                </a>
+                {% endif %}
+            {% elif tipo_novedad == 'otro' %}
+                <p class="mb-0"><strong>Descripción de la novedad:</strong> {{ novedad_metadata.descripcion_otro or 'No registrada' }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if examen.concepto_de_aptitud or examen.restricciones_medicas or examen.recomendaciones_medicas or examen.fecha_nuevo_control %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title text-primary">Concepto Médico Ocupacional</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-2"><strong>Fecha del examen:</strong> {{ examen.fecha_examen or 'No registrada' }}</p>
+                    <p class="mb-2"><strong>Concepto de Aptitud:</strong> 
+                        {% if examen.concepto_de_aptitud %}
+                            <span class="badge 
+                                {% if examen.concepto_de_aptitud == 'apto' %}bg-success
+                                {% elif examen.concepto_de_aptitud == 'apto_con_restricciones' %}bg-warning
+                                {% elif examen.concepto_de_aptitud == 'no_apto' %}bg-danger
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {{ examen.concepto_de_aptitud | replace('_', ' ') | title }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">No registrado</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-2"><strong>Próximo Control:</strong> {{ examen.fecha_nuevo_control or 'No programado' }}</p>
+                </div>
+            </div>
+            
+            {% if examen.restricciones_medicas or examen.recomendaciones_medicas %}
+            <hr>
+            {% endif %}
+
+            {% if examen.restricciones_medicas %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h6 class="text-danger"><strong>Restricciones Médicas:</strong></h6>
+                    <p class="bg-light p-3 rounded">{{ examen.restricciones_medicas }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if examen.recomendaciones_medicas %}
+            <div class="row">
+                <div class="col-12">
+                    <h6 class="text-info"><strong>Recomendaciones Médicas:</strong></h6>
+                    <p class="bg-light p-3 rounded">{{ examen.recomendaciones_medicas }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if observaciones_generales %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Observaciones Generales</h5>
+            <p>{{ observaciones_generales | replace('\\n', '<br>') | safe }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

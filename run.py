@@ -1,7 +1,8 @@
 from app import create_app, db
 
-from app.models.empleados import Empleado
-from app.models.examen import Examen
+
+from app.models.transaccionales.empleado import Empleado
+from app.models.transaccionales.examen import Examen
 
 app = create_app()
 

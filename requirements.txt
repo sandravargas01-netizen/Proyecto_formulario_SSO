@@ -6,3 +6,4 @@ WTForms==3.0.1
 python-dotenv==1.0.0
 Werkzeug==2.3.7
 email_validator==2.0.0
+reportlab==5.0.0

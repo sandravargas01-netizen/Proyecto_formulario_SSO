@@ -1,202 +1,98 @@
-{% extends 'base.html' %}
+{% extends "auth/base_auth.html" %}
 
 {% block content %}
 
 <div class="container">
 
-    <div class="row justify-content-center align-items-center vh-100">
+    <div class="row justify-content-center">
 
-        <div class="col-md-8">
+        <div class="col-lg-9">
 
-            <div
-                class="card shadow-lg border-0"
-                style="
-                    border-radius: 20px;
-                    overflow: hidden;
-                "
-            >
+            <div class="card shadow-lg border-0">
 
                 <div class="row g-0">
 
                     <!-- PANEL IZQUIERDO -->
 
-                    <div class="col-md-5">
+                    <div class="col-md-5 bg-primary text-white text-center p-5">
 
-                        <div
-                            style="
-                                background:
-                                linear-gradient(
-                                    180deg,
-                                    #0d6efd,
-                                    #084298
-                                );
+                        <img
+                            src="https://upload.wikimedia.org/wikipedia/commons/5/56/Univalle.svg"
+                            width="100"
+                            class="mb-4">
 
-                                height: 100%;
+                        <h1 class="fw-bold">
 
-                                min-height: 500px;
+                            Universidad del Valle
 
-                                display:flex;
+                        </h1>
 
-                                flex-direction:column;
+                        <h3>
 
-                                justify-content:center;
+                            Sección de Salud Ocupacional
 
-                                align-items:center;
+                        </h3>
 
-                                color:white;
+                        <hr>
 
-                                padding:40px;
-                            "
-                        >
+                        <p>
 
-                            <!-- LOGO -->
+                            Sistema de Gestión de Empleados y Exámenes Ocupacionales
 
-                            <img
-                                src="{{ url_for('static', filename='img/univalle.png') }}"
-                                style="
-                                    width:140px;
-                                    margin-bottom:25px;
-                                "
-                            >
-
-                            <!-- TÍTULOS -->
-
-                            <h1
-                                class="fw-bold text-center"
-                                style="
-                                    font-size:48px;
-                                    line-height:1.1;
-                                "
-                            >
-
-                                Universidad
-                                del Valle
-
-                            </h1>
-
-                            <h3
-                                class="text-center mt-3"
-                                style="
-                                    font-weight:300;
-                                "
-                            >
-
-                                Sección de Salud
-                                Ocupacional
-
-                            </h3>
-
-                            <p
-                                class="text-center mt-4"
-                                style="
-                                    font-size:18px;
-                                "
-                            >
-
-                                Sistema de Gestión
-                                de Empleados y
-                                Exámenes Ocupacionales
-
-                            </p>
-
-                        </div>
+                        </p>
 
                     </div>
 
-
                     <!-- LOGIN -->
 
-                    <div class="col-md-7">
+                    <div class="col-md-7 p-5">
 
-                        <div class="card-body p-5">
+                        <h1 class="fw-bold">
 
-                            <div class="text-center mb-4">
+                            Iniciar Sesión
 
-                                <h2 class="fw-bold">
+                        </h1>
 
-                                    Iniciar Sesión
+                        <p class="text-muted">
 
-                                </h2>
+                            Sistema Salud Ocupacional
 
-                                <p class="text-muted">
+                        </p>
 
-                                    Sistema Salud Ocupacional
+                        <form method="POST">
 
-                                </p>
+                            <div class="mb-3">
+
+                                <label>Email</label>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    class="form-control"
+                                    required>
 
                             </div>
 
-                            <form method="POST">
+                            <div class="mb-3">
 
-                                <!-- EMAIL -->
+                                <label>Contraseña</label>
 
-                                <div class="mb-3">
+                                <input
+                                    type="password"
+                                    name="password"
+                                    class="form-control"
+                                    required>
 
-                                    <label class="form-label">
+                            </div>
 
-                                        Email
+                            <button
+                                class="btn btn-primary w-100">
 
-                                    </label>
+                                Ingresar
 
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        class="form-control"
-                                        required
-                                    >
+                            </button>
 
-                                </div>
-
-
-                                <!-- PASSWORD -->
-
-                                <div class="mb-3">
-
-                                    <label class="form-label">
-
-                                        Contraseña
-
-                                    </label>
-
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        class="form-control"
-                                        required
-                                    >
-
-                                </div>
-
-
-                                <!-- RECUPERAR -->
-
-                                <div class="text-end mb-4">
-
-                                    <a
-                                        href="/auth/recuperar-password"
-                                        class="text-decoration-none"
-                                    >
-
-                                        ¿Olvidaste tu contraseña?
-
-                                    </a>
-
-                                </div>
-
-
-                                <!-- BOTÓN -->
-
-                                <button
-                                    class="btn btn-primary w-100"
-                                >
-
-                                    Ingresar
-
-                                </button>
-
-                            </form>
-
-                        </div>
+                        </form>
 
                     </div>
 
