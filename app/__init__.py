@@ -1,23 +1,17 @@
+import os
+
 from flask import Flask, redirect
 from flask_sqlalchemy import SQLAlchemy
+
+from app.config import DevelopmentConfig
 
 db = SQLAlchemy()
 
 
 def create_app():
 
-    app = Flask(__name__)
-
-    # ==========================================
-    # CONFIGURACIÓN SQLITE
-    # ==========================================
-
-    app.config["SECRET_KEY"] = "secretkey"
-
-    app.config["SQLALCHEMY_DATABASE_URI"] = \
-        "sqlite:///salud_ocupacional.db"
-
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_object(DevelopmentConfig)
 
     # ==========================================
     # DATABASE

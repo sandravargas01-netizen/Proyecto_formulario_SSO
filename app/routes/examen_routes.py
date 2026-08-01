@@ -271,7 +271,7 @@ def crear_para_empleado(empleado_id):
         db.session.commit()
 
         return redirect(
-            url_for("empleado.consulta_integral", id=empleado.id_empleado)
+            url_for("empleado.consulta_integral", id=empleado.id_empleado, _anchor="examenes-ocupacionales")
         )
 
     return render_template(
@@ -300,6 +300,28 @@ def descargar_examen_pdf(id):
         pdf_buffer,
         mimetype='application/pdf',
         as_attachment=True,
+        download_name=pdf_name
+    )
+
+
+@examen_bp.route('/<int:id>/pdf')
+def ver_examen_pdf(id):
+    examen = Examen.query.get(id)
+
+    if not examen:
+        return redirect(url_for("examen.listar"))
+
+    empleado = Empleado.query.get(examen.id_empleado)
+
+    if not empleado:
+        return redirect(url_for("examen.listar"))
+
+    pdf_buffer = PDFService.generar_examen_pdf(examen, empleado)
+    pdf_name = f"examen_{empleado.cedula or empleado.id_empleado}_{examen.fecha_examen or examen.id}.pdf"
+    return send_file(
+        pdf_buffer,
+        mimetype='application/pdf',
+        as_attachment=False,
         download_name=pdf_name
     )
 

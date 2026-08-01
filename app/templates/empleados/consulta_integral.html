@@ -126,24 +126,72 @@
                 <textarea name="observaciones" id="hc_observaciones_payload" class="d-none"></textarea>
 
                 <div class="border rounded p-3 mb-3">
-                    <h6 class="fw-bold mb-3 text-primary">Sección 1. Datos de Registro y Contractuales</h6>
+                    <h6 class="fw-bold mb-3 text-primary">Datos Básicos</h6>
                     <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre Completo</label>
+                            <input type="text" name="hc_nombre_completo" class="form-control hc-observable" data-label="Nombre Completo" value="{{ empleado.nombres }} {{ empleado.apellidos }}" readonly>
+                        </div>
                         <div class="col-md-3">
+                            <label class="form-label">Cédula</label>
+                            <input type="text" name="hc_cedula" class="form-control hc-observable" data-label="Cédula" value="{{ empleado.cedula }}" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" name="hc_fecha_nacimiento" id="hc_fecha_nacimiento" class="form-control hc-observable" data-label="Fecha de Nacimiento" value="{{ empleado.fecha_nacimiento.strftime('%Y-%m-%d') if empleado.fecha_nacimiento else '' }}" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Edad</label>
+                            <input type="text" name="hc_edad" id="hc_edad" class="form-control hc-observable" data-label="Edad" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Estado civil</label>
+                            <input type="text" name="hc_estado_civil" class="form-control hc-observable" data-label="Estado civil">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Ciudad de Residencia</label>
+                            <input type="text" name="hc_ciudad_residencia" class="form-control hc-observable" data-label="Ciudad de Residencia">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" name="hc_direccion" class="form-control hc-observable" data-label="Dirección">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Teléfono de Contacto</label>
+                            <input type="text" name="hc_telefono_contacto" class="form-control hc-observable" data-label="Teléfono de Contacto" value="{{ empleado.telefono or '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" name="hc_correo_electronico" class="form-control hc-observable" data-label="Correo Electrónico" value="{{ empleado.correo or '' }}">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Núcleo familiar</label>
+                            <input type="text" name="hc_nucleo_familiar" class="form-control hc-observable" data-label="Núcleo familiar">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Datos de evaluación</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
                             <label class="form-label">Fecha de evaluación</label>
                             <input type="date" name="fecha_novedad" class="form-control hc-observable" data-label="Fecha de evaluación" required>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Fecha del examen</label>
-                            <input type="date" name="fecha_examen" class="form-control hc-observable" data-label="Fecha del examen" required>
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">Tiempo en el cargo actual</label>
                             <input type="text" name="hc_tiempo_cargo" class="form-control hc-observable" data-label="Tiempo en el cargo actual">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">Fecha de ingreso a Univalle</label>
                             <input type="date" name="hc_fecha_ingreso_univalle" class="form-control hc-observable" data-label="Fecha de ingreso a Univalle">
                         </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 1. Datos de Registro y Contractuales</h6>
+                    <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Cargo actual</label>
                             <input type="text" name="hc_cargo_actual" class="form-control hc-observable" data-label="Cargo actual">
@@ -173,22 +221,30 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Escolaridad</label>
-                            <input type="text" name="hc_escolaridad" class="form-control hc-observable" data-label="Escolaridad">
+                            <select name="hc_escolaridad" class="form-select hc-observable" data-label="Escolaridad">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Bachiller">Bachiller</option>
+                                <option value="Técnico">Técnico</option>
+                                <option value="Tecnólogo">Tecnólogo</option>
+                                <option value="Especialización">Especialización</option>
+                                <option value="Doctorado">Doctorado</option>
+                                <option value="Profesional">Profesional</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Profesión</label>
                             <input type="text" name="hc_profesion" class="form-control hc-observable" data-label="Profesión">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Cargos ocupados</label>
-                            <input type="text" name="hc_cargos_ocupados" class="form-control hc-observable" data-label="Cargos ocupados">
+                            <label class="form-label">Cargos ocupados (historial)</label>
+                            <textarea name="hc_cargos_ocupados" class="form-control hc-observable" data-label="Cargos ocupados" rows="3" placeholder="Escriba un cargo por línea para guardar el historial&#10;Ejemplo:&#10;Analista - 2020 a 2022&#10;Coordinador - 2023 a 2024"></textarea>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Jefe inmediato</label>
                             <input type="text" name="hc_jefe_inmediato" class="form-control hc-observable" data-label="Jefe inmediato">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Cargo</label>
+                            <label class="form-label">Cargo del jefe</label>
                             <input type="text" name="hc_cargo_jefe" class="form-control hc-observable" data-label="Cargo">
                         </div>
                         <div class="col-md-4">
@@ -215,7 +271,10 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Empresa</label>
-                            <input type="text" name="hc_ant_empresa" class="form-control hc-observable" data-label="Antecedente ocupacional - Empresa">
+                            <div class="input-group">
+                                <input type="text" name="hc_ant_empresa" id="hc_ant_empresa" class="form-control hc-observable" data-label="Antecedente ocupacional - Empresa">
+                                <button type="button" class="btn btn-outline-secondary" id="btn_add_ant_empresa">+ Agregar empresa</button>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Cargo</label>
@@ -433,22 +492,603 @@
                         <div class="col-md-6"><label class="form-label">Componente sensorial</label><textarea name="hc_to_sensorial" class="form-control hc-observable" data-label="TO - Componente sensorial" rows="2"></textarea></div>
                         <div class="col-md-6"><label class="form-label">Áreas ocupacionales</label><textarea name="hc_to_areas" class="form-control hc-observable" data-label="TO - Áreas ocupacionales" rows="2"></textarea></div>
                         <div class="col-md-6"><label class="form-label">AVD básicas</label><textarea name="hc_to_avd_basicas" class="form-control hc-observable" data-label="TO - AVD básicas" rows="2"></textarea></div>
-                        <div class="col-md-3"><label class="form-label">Índice Barthel</label><input type="number" min="0" max="100" name="hc_to_barthel" class="form-control hc-observable" data-label="Índice Barthel"></div>
-                        <div class="col-md-3"><label class="form-label">Grado dependencia</label><select name="hc_to_dependencia" class="form-select hc-observable" data-label="Grado de dependencia"><option value="">--</option><option>Dependencia total</option><option>Dependencia grave</option><option>Dependencia moderada</option><option>Dependencia leve</option><option>Independiente</option></select></div>
+                        <div class="col-md-6">
+                            <label class="form-label">Índice Barthel</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle mb-2">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 45%;">Actividad</th>
+                                            <th style="width: 20%;">Valor</th>
+                                            <th style="width: 35%;">Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>Comer</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Comer"><option value="">--</option><option value="10">10</option><option value="5">5</option><option value="0">0</option></select></td><td>Totalmente independiente / Necesita ayuda / Dependiente</td></tr>
+                                        <tr><td>Bañarse</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Bañarse"><option value="">--</option><option value="5">5</option><option value="0">0</option></select></td><td>Independiente / Dependiente</td></tr>
+                                        <tr><td>Higiene personal</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Higiene personal"><option value="">--</option><option value="5">5</option><option value="0">0</option></select></td><td>Independiente / Dependiente</td></tr>
+                                        <tr><td>Vestirse</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Vestirse"><option value="">--</option><option value="10">10</option><option value="5">5</option><option value="0">0</option></select></td><td>Independiente / Necesita ayuda / Dependiente</td></tr>
+                                        <tr><td>Deposiciones</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Deposiciones"><option value="">--</option><option value="10">10</option><option value="5">5</option><option value="0">0</option></select></td><td>Continente / Ocasionalmente incontinente / Incontinente</td></tr>
+                                        <tr><td>Micción</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Micción"><option value="">--</option><option value="10">10</option><option value="5">5</option><option value="0">0</option></select></td><td>Continencia normal / Episodio diario / Incontinencia</td></tr>
+                                        <tr><td>Usar el retrete</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Usar el retrete"><option value="">--</option><option value="10">10</option><option value="5">5</option><option value="0">0</option></select></td><td>Independiente / Ayuda para limpiarse / Dependiente</td></tr>
+                                        <tr><td>Trasladarse</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Trasladarse"><option value="">--</option><option value="15">15</option><option value="10">10</option><option value="5">5</option><option value="0">0</option></select></td><td>Independiente / Mínima ayuda / Gran ayuda / Dependiente</td></tr>
+                                        <tr><td>Deambular</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Deambular"><option value="">--</option><option value="15">15</option><option value="10">10</option><option value="5">5</option><option value="0">0</option></select></td><td>Independiente 50 m / Ayuda para 50 m / Silla de ruedas / Dependiente</td></tr>
+                                        <tr><td>Escaleras</td><td><select class="form-select form-select-sm barthel-input hc-observable" data-label="Barthel - Escaleras"><option value="">--</option><option value="10">10</option><option value="5">5</option><option value="0">0</option></select></td><td>Independiente / Ayuda / Dependiente</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="small text-muted mt-1">Valor total máximo: 100 puntos. El resultado se interpreta así: 0–20 dependencia total, 21–60 dependencia grave, 61–90 dependencia moderada, 91–99 dependencia leve y 100 independiente.</div>
+                            <input type="hidden" name="hc_to_barthel" id="hc_to_barthel" class="hc-observable" data-label="Índice Barthel">
+                            <input type="hidden" name="hc_to_dependencia" id="hc_to_dependencia" class="hc-observable" data-label="Grado de dependencia">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Resultado</label>
+                            <div class="border rounded p-3 bg-light">
+                                <div class="mb-2"><strong>Puntaje:</strong> <span id="barthel-puntaje">0</span> / 100</div>
+                                <div class="mb-2"><strong>Categoría:</strong> <span id="barthel-categoria">Sin valoración</span></div>
+                                <div class="mb-2"><strong>Resultado:</strong> <span id="barthel-resultado">--</span></div>
+                                <button type="button" id="barthel-calcular" class="btn btn-sm btn-primary mt-2">Calcular</button>
+                            </div>
+                        </div>
                         <div class="col-md-6"><label class="form-label">AVD instrumentales/productivas/ocio</label><textarea name="hc_to_otras" class="form-control hc-observable" data-label="TO - Otras AVD" rows="2"></textarea></div>
 
-                        <div class="col-12"><hr><h6 class="mb-2">Fisioterapia</h6></div>
-                        <div class="col-md-6"><label class="form-label">Rangos de movilidad articular</label><textarea name="hc_fisio_rom" class="form-control hc-observable" data-label="Fisioterapia - ROM" rows="3" placeholder="Hombro, codo, muñeca, mano, cadera, rodilla, tobillo"></textarea></div>
-                        <div class="col-md-6"><label class="form-label">Fuerza muscular (MMT)</label><textarea name="hc_fisio_mmt" class="form-control hc-observable" data-label="Fisioterapia - MMT" rows="3"></textarea></div>
-                        <div class="col-md-12"><label class="form-label">Capacidades funcionales actuales</label><textarea name="hc_fisio_capacidades" class="form-control hc-observable" data-label="Fisioterapia - Capacidades funcionales" rows="2" placeholder="Deambulación, escaleras, manipulación, permanencia de pie/sentado, levantamiento de cargas"></textarea></div>
-
-                        <div class="col-12"><hr><h6 class="mb-2">Psicología</h6></div>
-                        <div class="col-md-12"><label class="form-label">Valoración psicológica</label><textarea name="hc_psico_valoracion" class="form-control hc-observable" data-label="Valoración psicológica" rows="3"></textarea></div>
+                        <!-- Fisioterapia moved to dedicated Section 8 -->
                     </div>
                 </div>
 
                 <div class="border rounded p-3 mb-3">
-                    <h6 class="fw-bold mb-3 text-primary">Sección 8. Exámenes de Laboratorio e Impresión Diagnóstica</h6>
+                    <h6 class="fw-bold mb-3 text-primary">Sección 8. Valoración Fisioterapeuta</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha evaluación fisioterapia</label>
+                            <input type="date" name="hc_fisio_fecha" class="form-control hc-observable" data-label="Fisioterapia - Fecha">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Profesional fisioterapeuta</label>
+                            <input type="text" name="hc_fisio_profesional" class="form-control hc-observable" data-label="Fisioterapia - Profesional">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Plan de tratamiento</label>
+                            <input type="text" name="hc_fisio_plan" class="form-control hc-observable" data-label="Fisioterapia - Plan de tratamiento">
+                        </div>
+
+                        <div class="col-12"><hr></div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rangos de Movilidad Articular - Hombro</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Movimiento</th>
+                                            <th>Rango Normal (°)</th>
+                                            <th>Derecho (°)</th>
+                                            <th>Izquierdo (°)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexión</td>
+                                            <td>0° - 180°</td>
+                                            <td><input type="number" step="1" name="hombro_flexion_der" class="form-control form-control-sm hc-observable" data-label="Hombro - Flexión - Derecho"></td>
+                                            <td><input type="number" step="1" name="hombro_flexion_izq" class="form-control form-control-sm hc-observable" data-label="Hombro - Flexión - Izquierdo"></td>
+                                            <td><input type="text" name="hombro_flexion_obs" class="form-control form-control-sm hc-observable" data-label="Hombro - Flexión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensión</td>
+                                            <td>0° - 60°</td>
+                                            <td><input type="number" step="1" name="hombro_extension_der" class="form-control form-control-sm hc-observable" data-label="Hombro - Extensión - Derecho"></td>
+                                            <td><input type="number" step="1" name="hombro_extension_izq" class="form-control form-control-sm hc-observable" data-label="Hombro - Extensión - Izquierdo"></td>
+                                            <td><input type="text" name="hombro_extension_obs" class="form-control form-control-sm hc-observable" data-label="Hombro - Extensión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Abducción</td>
+                                            <td>0° - 180°</td>
+                                            <td><input type="number" step="1" name="hombro_abduccion_der" class="form-control form-control-sm hc-observable" data-label="Hombro - Abducción - Derecho"></td>
+                                            <td><input type="number" step="1" name="hombro_abduccion_izq" class="form-control form-control-sm hc-observable" data-label="Hombro - Abducción - Izquierdo"></td>
+                                            <td><input type="text" name="hombro_abduccion_obs" class="form-control form-control-sm hc-observable" data-label="Hombro - Abducción - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Aducción</td>
+                                            <td>0° - 30°</td>
+                                            <td><input type="number" step="1" name="hombro_adduccion_der" class="form-control form-control-sm hc-observable" data-label="Hombro - Aducción - Derecho"></td>
+                                            <td><input type="number" step="1" name="hombro_adduccion_izq" class="form-control form-control-sm hc-observable" data-label="Hombro - Aducción - Izquierdo"></td>
+                                            <td><input type="text" name="hombro_adduccion_obs" class="form-control form-control-sm hc-observable" data-label="Hombro - Aducción - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rotación interna</td>
+                                            <td>0° - 70°</td>
+                                            <td><input type="number" step="1" name="hombro_rot_int_der" class="form-control form-control-sm hc-observable" data-label="Hombro - Rotación interna - Derecho"></td>
+                                            <td><input type="number" step="1" name="hombro_rot_int_izq" class="form-control form-control-sm hc-observable" data-label="Hombro - Rotación interna - Izquierdo"></td>
+                                            <td><input type="text" name="hombro_rot_int_obs" class="form-control form-control-sm hc-observable" data-label="Hombro - Rotación interna - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rotación externa</td>
+                                            <td>0° - 90°</td>
+                                            <td><input type="number" step="1" name="hombro_rot_ext_der" class="form-control form-control-sm hc-observable" data-label="Hombro - Rotación externa - Derecho"></td>
+                                            <td><input type="number" step="1" name="hombro_rot_ext_izq" class="form-control form-control-sm hc-observable" data-label="Hombro - Rotación externa - Izquierdo"></td>
+                                            <td><input type="text" name="hombro_rot_ext_obs" class="form-control form-control-sm hc-observable" data-label="Hombro - Rotación externa - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rangos de Movilidad Articular - Codo</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Movimiento</th>
+                                            <th>Rango Normal (°)</th>
+                                            <th>Derecho (°)</th>
+                                            <th>Izquierdo (°)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexión</td>
+                                            <td>0° - 150°</td>
+                                            <td><input type="number" step="1" name="codo_flexion_der" class="form-control form-control-sm hc-observable" data-label="Codo - Flexión - Derecho"></td>
+                                            <td><input type="number" step="1" name="codo_flexion_izq" class="form-control form-control-sm hc-observable" data-label="Codo - Flexión - Izquierdo"></td>
+                                            <td><input type="text" name="codo_flexion_obs" class="form-control form-control-sm hc-observable" data-label="Codo - Flexión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensión</td>
+                                            <td>0°</td>
+                                            <td><input type="number" step="1" name="codo_extension_der" class="form-control form-control-sm hc-observable" data-label="Codo - Extensión - Derecho"></td>
+                                            <td><input type="number" step="1" name="codo_extension_izq" class="form-control form-control-sm hc-observable" data-label="Codo - Extensión - Izquierdo"></td>
+                                            <td><input type="text" name="codo_extension_obs" class="form-control form-control-sm hc-observable" data-label="Codo - Extensión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Pronación</td>
+                                            <td>0° - 80°</td>
+                                            <td><input type="number" step="1" name="codo_pronacion_der" class="form-control form-control-sm hc-observable" data-label="Codo - Pronación - Derecho"></td>
+                                            <td><input type="number" step="1" name="codo_pronacion_izq" class="form-control form-control-sm hc-observable" data-label="Codo - Pronación - Izquierdo"></td>
+                                            <td><input type="text" name="codo_pronacion_obs" class="form-control form-control-sm hc-observable" data-label="Codo - Pronación - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Supinación</td>
+                                            <td>0° - 80°</td>
+                                            <td><input type="number" step="1" name="codo_supinacion_der" class="form-control form-control-sm hc-observable" data-label="Codo - Supinación - Derecho"></td>
+                                            <td><input type="number" step="1" name="codo_supinacion_izq" class="form-control form-control-sm hc-observable" data-label="Codo - Supinación - Izquierdo"></td>
+                                            <td><input type="text" name="codo_supinacion_obs" class="form-control form-control-sm hc-observable" data-label="Codo - Supinación - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rangos de Movilidad Articular - Muñeca</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Movimiento</th>
+                                            <th>Rango Normal (°)</th>
+                                            <th>Derecho (°)</th>
+                                            <th>Izquierdo (°)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexión</td>
+                                            <td>0° - 80°</td>
+                                            <td><input type="number" step="1" name="muneca_flexion_der" class="form-control form-control-sm hc-observable" data-label="Muñeca - Flexión - Derecho"></td>
+                                            <td><input type="number" step="1" name="muneca_flexion_izq" class="form-control form-control-sm hc-observable" data-label="Muñeca - Flexión - Izquierdo"></td>
+                                            <td><input type="text" name="muneca_flexion_obs" class="form-control form-control-sm hc-observable" data-label="Muñeca - Flexión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensión</td>
+                                            <td>0° - 70°</td>
+                                            <td><input type="number" step="1" name="muneca_extension_der" class="form-control form-control-sm hc-observable" data-label="Muñeca - Extensión - Derecho"></td>
+                                            <td><input type="number" step="1" name="muneca_extension_izq" class="form-control form-control-sm hc-observable" data-label="Muñeca - Extensión - Izquierdo"></td>
+                                            <td><input type="text" name="muneca_extension_obs" class="form-control form-control-sm hc-observable" data-label="Muñeca - Extensión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Desviación radial</td>
+                                            <td>0° - 20°</td>
+                                            <td><input type="number" step="1" name="muneca_desv_radial_der" class="form-control form-control-sm hc-observable" data-label="Muñeca - Desviación radial - Derecho"></td>
+                                            <td><input type="number" step="1" name="muneca_desv_radial_izq" class="form-control form-control-sm hc-observable" data-label="Muñeca - Desviación radial - Izquierdo"></td>
+                                            <td><input type="text" name="muneca_desv_radial_obs" class="form-control form-control-sm hc-observable" data-label="Muñeca - Desviación radial - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Desviación cubital</td>
+                                            <td>0° - 30°</td>
+                                            <td><input type="number" step="1" name="muneca_desv_cubital_der" class="form-control form-control-sm hc-observable" data-label="Muñeca - Desviación cubital - Derecho"></td>
+                                            <td><input type="number" step="1" name="muneca_desv_cubital_izq" class="form-control form-control-sm hc-observable" data-label="Muñeca - Desviación cubital - Izquierdo"></td>
+                                            <td><input type="text" name="muneca_desv_cubital_obs" class="form-control form-control-sm hc-observable" data-label="Muñeca - Desviación cubital - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rangos de Movilidad Articular - Mano / Dedos</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Movimiento</th>
+                                            <th>Rango Normal (°)</th>
+                                            <th>Derecho (°)</th>
+                                            <th>Izquierdo (°)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexión MCP</td>
+                                            <td>0° - 90°</td>
+                                            <td><input type="number" step="1" name="mano_mcp_flex_der" class="form-control form-control-sm hc-observable" data-label="Mano - MCP Flexión - Derecho"></td>
+                                            <td><input type="number" step="1" name="mano_mcp_flex_izq" class="form-control form-control-sm hc-observable" data-label="Mano - MCP Flexión - Izquierdo"></td>
+                                            <td><input type="text" name="mano_mcp_flex_obs" class="form-control form-control-sm hc-observable" data-label="Mano - MCP Flexión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensión MCP</td>
+                                            <td>0° - 30°</td>
+                                            <td><input type="number" step="1" name="mano_mcp_ext_der" class="form-control form-control-sm hc-observable" data-label="Mano - MCP Extensión - Derecho"></td>
+                                            <td><input type="number" step="1" name="mano_mcp_ext_izq" class="form-control form-control-sm hc-observable" data-label="Mano - MCP Extensión - Izquierdo"></td>
+                                            <td><input type="text" name="mano_mcp_ext_obs" class="form-control form-control-sm hc-observable" data-label="Mano - MCP Extensión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flexión PIP</td>
+                                            <td>0° - 100°</td>
+                                            <td><input type="number" step="1" name="mano_pip_flex_der" class="form-control form-control-sm hc-observable" data-label="Mano - PIP Flexión - Derecho"></td>
+                                            <td><input type="number" step="1" name="mano_pip_flex_izq" class="form-control form-control-sm hc-observable" data-label="Mano - PIP Flexión - Izquierdo"></td>
+                                            <td><input type="text" name="mano_pip_flex_obs" class="form-control form-control-sm hc-observable" data-label="Mano - PIP Flexión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flexión DIP</td>
+                                            <td>0° - 90°</td>
+                                            <td><input type="number" step="1" name="mano_dip_flex_der" class="form-control form-control-sm hc-observable" data-label="Mano - DIP Flexión - Derecho"></td>
+                                            <td><input type="number" step="1" name="mano_dip_flex_izq" class="form-control form-control-sm hc-observable" data-label="Mano - DIP Flexión - Izquierdo"></td>
+                                            <td><input type="text" name="mano_dip_flex_obs" class="form-control form-control-sm hc-observable" data-label="Mano - DIP Flexión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensión total dedos</td>
+                                            <td>0°</td>
+                                            <td><input type="number" step="1" name="mano_ext_total_der" class="form-control form-control-sm hc-observable" data-label="Mano - Extensión total dedos - Derecho"></td>
+                                            <td><input type="number" step="1" name="mano_ext_total_izq" class="form-control form-control-sm hc-observable" data-label="Mano - Extensión total dedos - Izquierdo"></td>
+                                            <td><input type="text" name="mano_ext_total_obs" class="form-control form-control-sm hc-observable" data-label="Mano - Extensión total dedos - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rangos de Movilidad Articular - Cadera</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Movimiento</th>
+                                            <th>Rango Normal (°)</th>
+                                            <th>Derecho (°)</th>
+                                            <th>Izquierdo (°)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexión</td>
+                                            <td>0° - 120°</td>
+                                            <td><input type="number" step="1" name="cadera_flexion_der" class="form-control form-control-sm hc-observable" data-label="Cadera - Flexión - Derecho"></td>
+                                            <td><input type="number" step="1" name="cadera_flexion_izq" class="form-control form-control-sm hc-observable" data-label="Cadera - Flexión - Izquierdo"></td>
+                                            <td><input type="text" name="cadera_flexion_obs" class="form-control form-control-sm hc-observable" data-label="Cadera - Flexión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensión</td>
+                                            <td>0° - 30°</td>
+                                            <td><input type="number" step="1" name="cadera_extension_der" class="form-control form-control-sm hc-observable" data-label="Cadera - Extensión - Derecho"></td>
+                                            <td><input type="number" step="1" name="cadera_extension_izq" class="form-control form-control-sm hc-observable" data-label="Cadera - Extensión - Izquierdo"></td>
+                                            <td><input type="text" name="cadera_extension_obs" class="form-control form-control-sm hc-observable" data-label="Cadera - Extensión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Abducción</td>
+                                            <td>0° - 45°</td>
+                                            <td><input type="number" step="1" name="cadera_abduccion_der" class="form-control form-control-sm hc-observable" data-label="Cadera - Abducción - Derecho"></td>
+                                            <td><input type="number" step="1" name="cadera_abduccion_izq" class="form-control form-control-sm hc-observable" data-label="Cadera - Abducción - Izquierdo"></td>
+                                            <td><input type="text" name="cadera_abduccion_obs" class="form-control form-control-sm hc-observable" data-label="Cadera - Abducción - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Aducción</td>
+                                            <td>0° - 30°</td>
+                                            <td><input type="number" step="1" name="cadera_adduccion_der" class="form-control form-control-sm hc-observable" data-label="Cadera - Aducción - Derecho"></td>
+                                            <td><input type="number" step="1" name="cadera_adduccion_izq" class="form-control form-control-sm hc-observable" data-label="Cadera - Aducción - Izquierdo"></td>
+                                            <td><input type="text" name="cadera_adduccion_obs" class="form-control form-control-sm hc-observable" data-label="Cadera - Aducción - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rotación interna</td>
+                                            <td>0° - 40°</td>
+                                            <td><input type="number" step="1" name="cadera_rot_int_der" class="form-control form-control-sm hc-observable" data-label="Cadera - Rotación interna - Derecho"></td>
+                                            <td><input type="number" step="1" name="cadera_rot_int_izq" class="form-control form-control-sm hc-observable" data-label="Cadera - Rotación interna - Izquierdo"></td>
+                                            <td><input type="text" name="cadera_rot_int_obs" class="form-control form-control-sm hc-observable" data-label="Cadera - Rotación interna - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rotación externa</td>
+                                            <td>0° - 45°</td>
+                                            <td><input type="number" step="1" name="cadera_rot_ext_der" class="form-control form-control-sm hc-observable" data-label="Cadera - Rotación externa - Derecho"></td>
+                                            <td><input type="number" step="1" name="cadera_rot_ext_izq" class="form-control form-control-sm hc-observable" data-label="Cadera - Rotación externa - Izquierdo"></td>
+                                            <td><input type="text" name="cadera_rot_ext_obs" class="form-control form-control-sm hc-observable" data-label="Cadera - Rotación externa - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rangos de Movilidad Articular - Rodilla</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Movimiento</th>
+                                            <th>Rango Normal (°)</th>
+                                            <th>Derecho (°)</th>
+                                            <th>Izquierdo (°)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexión</td>
+                                            <td>0° - 135°</td>
+                                            <td><input type="number" step="1" name="rodilla_flexion_der" class="form-control form-control-sm hc-observable" data-label="Rodilla - Flexión - Derecho"></td>
+                                            <td><input type="number" step="1" name="rodilla_flexion_izq" class="form-control form-control-sm hc-observable" data-label="Rodilla - Flexión - Izquierdo"></td>
+                                            <td><input type="text" name="rodilla_flexion_obs" class="form-control form-control-sm hc-observable" data-label="Rodilla - Flexión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensión</td>
+                                            <td>0°</td>
+                                            <td><input type="number" step="1" name="rodilla_extension_der" class="form-control form-control-sm hc-observable" data-label="Rodilla - Extensión - Derecho"></td>
+                                            <td><input type="number" step="1" name="rodilla_extension_izq" class="form-control form-control-sm hc-observable" data-label="Rodilla - Extensión - Izquierdo"></td>
+                                            <td><input type="text" name="rodilla_extension_obs" class="form-control form-control-sm hc-observable" data-label="Rodilla - Extensión - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rangos de Movilidad Articular - Tobillo</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Movimiento</th>
+                                            <th>Rango Normal (°)</th>
+                                            <th>Derecho (°)</th>
+                                            <th>Izquierdo (°)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexión dorsal</td>
+                                            <td>0° - 20°</td>
+                                            <td><input type="number" step="1" name="tobillo_flex_dorsal_der" class="form-control form-control-sm hc-observable" data-label="Tobillo - Flexión dorsal - Derecho"></td>
+                                            <td><input type="number" step="1" name="tobillo_flex_dorsal_izq" class="form-control form-control-sm hc-observable" data-label="Tobillo - Flexión dorsal - Izquierdo"></td>
+                                            <td><input type="text" name="tobillo_flex_dorsal_obs" class="form-control form-control-sm hc-observable" data-label="Tobillo - Flexión dorsal - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flexión plantar</td>
+                                            <td>0° - 50°</td>
+                                            <td><input type="number" step="1" name="tobillo_flex_plantar_der" class="form-control form-control-sm hc-observable" data-label="Tobillo - Flexión plantar - Derecho"></td>
+                                            <td><input type="number" step="1" name="tobillo_flex_plantar_izq" class="form-control form-control-sm hc-observable" data-label="Tobillo - Flexión plantar - Izquierdo"></td>
+                                            <td><input type="text" name="tobillo_flex_plantar_obs" class="form-control form-control-sm hc-observable" data-label="Tobillo - Flexión plantar - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Inversión</td>
+                                            <td>0° - 35°</td>
+                                            <td><input type="number" step="1" name="tobillo_inversion_der" class="form-control form-control-sm hc-observable" data-label="Tobillo - Inversión - Derecho"></td>
+                                            <td><input type="number" step="1" name="tobillo_inversion_izq" class="form-control form-control-sm hc-observable" data-label="Tobillo - Inversión - Izquierdo"></td>
+                                            <td><input type="text" name="tobillo_inversion_obs" class="form-control form-control-sm hc-observable" data-label="Tobillo - Inversión - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Eversión</td>
+                                            <td>0° - 15°</td>
+                                            <td><input type="number" step="1" name="tobillo_eversion_der" class="form-control form-control-sm hc-observable" data-label="Tobillo - Eversión - Derecho"></td>
+                                            <td><input type="number" step="1" name="tobillo_eversion_izq" class="form-control form-control-sm hc-observable" data-label="Tobillo - Eversión - Izquierdo"></td>
+                                            <td><input type="text" name="tobillo_eversion_obs" class="form-control form-control-sm hc-observable" data-label="Tobillo - Eversión - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Escala de Daniels (MMT): 0 = Sin contracción | 1 = Contracción sin movimiento | 2 = Movimiento sin gravedad | 3 = Movimiento contra gravedad | 4 = Contra resistencia moderada | 5 = Fuerza normal</label>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Evaluación de Fuerza Muscular (MMT) - Miembro Superior</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Grupo Muscular</th>
+                                            <th>Fuerza Derecha (0-5)</th>
+                                            <th>Fuerza Izquierda (0-5)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexores de hombro</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_flexores_hombro_der" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de hombro - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_flexores_hombro_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de hombro - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_sup_flexores_hombro_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de hombro - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Abductores de hombro</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_abductores_hombro_der" class="form-control form-control-sm hc-observable" data-label="MMT - Abductores de hombro - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_abductores_hombro_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Abductores de hombro - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_sup_abductores_hombro_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Abductores de hombro - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flexores de codo</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_flexores_codo_der" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de codo - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_flexores_codo_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de codo - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_sup_flexores_codo_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de codo - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensores de codo</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_extensores_codo_der" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de codo - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_extensores_codo_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de codo - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_sup_extensores_codo_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de codo - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flexores de muñeca</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_flexores_muneca_der" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de muñeca - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_flexores_muneca_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de muñeca - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_sup_flexores_muneca_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de muñeca - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensores de muñeca</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_extensores_muneca_der" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de muñeca - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_extensores_muneca_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de muñeca - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_sup_extensores_muneca_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de muñeca - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Prensión / Pinza manual</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_prension_der" class="form-control form-control-sm hc-observable" data-label="MMT - Prensión - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_sup_prension_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Prensión - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_sup_prension_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Prensión - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Evaluación de Fuerza Muscular (MMT) - Miembro Inferior</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Grupo Muscular</th>
+                                            <th>Fuerza Derecha (0-5)</th>
+                                            <th>Fuerza Izquierda (0-5)</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Flexores de cadera</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_flexores_cadera_der" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de cadera - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_flexores_cadera_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de cadera - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_inf_flexores_cadera_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de cadera - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensores de cadera</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_extensores_cadera_der" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de cadera - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_extensores_cadera_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de cadera - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_inf_extensores_cadera_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de cadera - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Abductores de cadera</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_abductores_cadera_der" class="form-control form-control-sm hc-observable" data-label="MMT - Abductores de cadera - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_abductores_cadera_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Abductores de cadera - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_inf_abductores_cadera_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Abductores de cadera - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flexores de rodilla</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_flexores_rodilla_der" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de rodilla - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_flexores_rodilla_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de rodilla - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_inf_flexores_rodilla_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores de rodilla - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Extensores de rodilla</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_extensores_rodilla_der" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de rodilla - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_extensores_rodilla_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de rodilla - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_inf_extensores_rodilla_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Extensores de rodilla - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flexores dorsales tobillo</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_flex_dorsal_tobillo_der" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores dorsales tobillo - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_flex_dorsal_tobillo_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores dorsales tobillo - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_inf_flex_dorsal_tobillo_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores dorsales tobillo - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flexores plantares tobillo</td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_flex_plantar_tobillo_der" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores plantares tobillo - Derecho"></td>
+                                            <td><input type="number" min="0" max="5" step="1" name="mmt_inf_flex_plantar_tobillo_izq" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores plantares tobillo - Izquierdo"></td>
+                                            <td><input type="text" name="mmt_inf_flex_plantar_tobillo_obs" class="form-control form-control-sm hc-observable" data-label="MMT - Flexores plantares tobillo - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Capacidades funcionales actuales</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Actividad</th>
+                                            <th>Sí</th>
+                                            <th>No</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Deambulación independiente</td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_deambulacion" value="Si" class="hc-observable" data-label="Capacidades - Deambulación" /></td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_deambulacion" value="No" class="hc-observable" data-label="Capacidades - Deambulación" /></td>
+                                            <td><input type="text" name="hc_cap_deambulacion_obs" class="form-control form-control-sm hc-observable" data-label="Capacidades - Deambulación - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Subir/bajar escaleras</td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_escaleras" value="Si" class="hc-observable" data-label="Capacidades - Escaleras" /></td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_escaleras" value="No" class="hc-observable" data-label="Capacidades - Escaleras" /></td>
+                                            <td><input type="text" name="hc_cap_escaleras_obs" class="form-control form-control-sm hc-observable" data-label="Capacidades - Escaleras - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Manipulación de objetos</td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_manipulacion" value="Si" class="hc-observable" data-label="Capacidades - Manipulación" /></td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_manipulacion" value="No" class="hc-observable" data-label="Capacidades - Manipulación" /></td>
+                                            <td><input type="text" name="hc_cap_manipulacion_obs" class="form-control form-control-sm hc-observable" data-label="Capacidades - Manipulación - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Permanencia de pie prolongada</td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_pie" value="Si" class="hc-observable" data-label="Capacidades - Permanencia pie" /></td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_pie" value="No" class="hc-observable" data-label="Capacidades - Permanencia pie" /></td>
+                                            <td><input type="text" name="hc_cap_pie_obs" class="form-control form-control-sm hc-observable" data-label="Capacidades - Permanencia pie - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Permanencia sentada</td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_sentado" value="Si" class="hc-observable" data-label="Capacidades - Permanencia sentado" /></td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_sentado" value="No" class="hc-observable" data-label="Capacidades - Permanencia sentado" /></td>
+                                            <td><input type="text" name="hc_cap_sentado_obs" class="form-control form-control-sm hc-observable" data-label="Capacidades - Permanencia sentado - Observaciones"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Levantamiento de cargas</td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_levantamiento" value="Si" class="hc-observable" data-label="Capacidades - Levantamiento" /></td>
+                                            <td class="text-center"><input type="radio" name="hc_cap_levantamiento" value="No" class="hc-observable" data-label="Capacidades - Levantamiento" /></td>
+                                            <td><input type="text" name="hc_cap_levantamiento_obs" class="form-control form-control-sm hc-observable" data-label="Capacidades - Levantamiento - Observaciones"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-12"><label class="form-label">Recomendaciones fisioterapia</label><textarea name="hc_fisio_recomendaciones" class="form-control hc-observable" data-label="Fisioterapia - Recomendaciones" rows="3"></textarea></div>
+                        <div class="col-12"><hr><h6 class="mb-2">Psicología</h6></div>
+                        <div class="col-md-12"><label class="form-label">Valoración psicológica</label><textarea name="hc_psico_valoracion" class="form-control hc-observable" data-label="Valoración psicológica" rows="3"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Recomendaciones por psicología</label><textarea name="recomendaciones_psicologia" class="form-control hc-observable" data-label="Recomendaciones psicología" rows="3"></textarea></div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 9. Exámenes de Laboratorio e Impresión Diagnóstica</h6>
                     <div class="row g-3">
                         <div class="col-md-12">
                             <label class="form-label">Exámenes de laboratorio (examen, fecha, descripción)</label>
@@ -523,6 +1163,7 @@
                         <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="riesgo[]" value="ruido" id="hc_riesgo_ruido"><label class="form-check-label" for="hc_riesgo_ruido">Ruido</label></div></div>
                         <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="riesgo[]" value="visual" id="hc_riesgo_visual"><label class="form-check-label" for="hc_riesgo_visual">Visual</label></div></div>
                         <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="riesgo[]" value="biomecanico" id="hc_riesgo_biomecanico"><label class="form-check-label" for="hc_riesgo_biomecanico">Biomecánico</label></div></div>
+                    </div>
                     </div>
                 </div>
 
@@ -649,10 +1290,15 @@ document.addEventListener('DOMContentLoaded', function () {
         button.addEventListener('click', function () {
             const targetId = button.getAttribute('data-target');
             showView(targetId);
+            if (targetId) {
+                history.replaceState(null, '', '#' + targetId);
+            }
         });
     });
 
-    showView('info-general');
+    const initialHash = window.location.hash ? window.location.hash.substring(1) : '';
+    const initialView = initialHash && document.getElementById(initialHash) ? initialHash : 'info-general';
+    showView(initialView);
 
     const hcTipoNovedad = document.getElementById('hc_tipo_novedad');
     const hcSvSection = document.getElementById('hc_sv_section');
@@ -686,6 +1332,122 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const hcForm = document.getElementById('hc_form');
     const hcObsPayload = document.getElementById('hc_observaciones_payload');
+    const fechaNacimientoInput = document.getElementById('hc_fecha_nacimiento');
+    const edadInput = document.getElementById('hc_edad');
+    const barthelInputs = document.querySelectorAll('.barthel-input');
+    const barthelPuntaje = document.getElementById('barthel-puntaje');
+    const barthelCategoria = document.getElementById('barthel-categoria');
+    const barthelResultado = document.getElementById('barthel-resultado');
+    const barthelScoreInput = document.getElementById('hc_to_barthel');
+    const barthelDependenciaInput = document.getElementById('hc_to_dependencia');
+
+    function calcularEdad(fechaNacimiento) {
+        if (!fechaNacimiento) {
+            return '';
+        }
+
+        const nacimiento = new Date(fechaNacimiento);
+        if (Number.isNaN(nacimiento.getTime())) {
+            return '';
+        }
+
+        const hoy = new Date();
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+        }
+
+        return edad;
+    }
+
+    function actualizarEdad() {
+        if (!fechaNacimientoInput || !edadInput) {
+            return;
+        }
+
+        const edad = calcularEdad(fechaNacimientoInput.value);
+        edadInput.value = edad === '' ? '' : edad + ' años';
+    }
+
+    function actualizarBarthel() {
+        if (!barthelPuntaje || !barthelCategoria || !barthelResultado) {
+            return;
+        }
+
+        let total = 0;
+        barthelInputs.forEach(function (input) {
+            const value = parseInt(input.value, 10);
+            if (!Number.isNaN(value)) {
+                total += value;
+            }
+        });
+
+        if (barthelScoreInput) {
+            barthelScoreInput.value = total;
+        }
+
+        let categoria = 'Sin valoración';
+        let resultado = '--';
+
+        if (total <= 20) {
+            categoria = 'Dependencia Total';
+            resultado = 'Dependencia total';
+        } else if (total <= 60) {
+            categoria = 'Dependencia Grave';
+            resultado = 'Dependencia grave';
+        } else if (total <= 90) {
+            categoria = 'Dependencia Moderada';
+            resultado = 'Dependencia moderada';
+        } else if (total <= 99) {
+            categoria = 'Dependencia Leve';
+            resultado = 'Dependencia leve';
+        } else if (total === 100) {
+            categoria = 'Independiente';
+            resultado = 'Independiente';
+        }
+
+        if (barthelDependenciaInput) {
+            barthelDependenciaInput.value = categoria;
+        }
+
+        barthelPuntaje.textContent = total;
+        barthelCategoria.textContent = categoria;
+        barthelResultado.textContent = resultado;
+    }
+
+    const barthelCalcularButton = document.getElementById('barthel-calcular');
+
+    if (fechaNacimientoInput && edadInput) {
+        fechaNacimientoInput.addEventListener('change', actualizarEdad);
+        actualizarEdad();
+    }
+
+    barthelInputs.forEach(function (input) {
+        input.addEventListener('change', actualizarBarthel);
+    });
+
+    if (barthelCalcularButton) {
+        barthelCalcularButton.addEventListener('click', function () {
+            actualizarBarthel();
+        });
+    }
+
+    actualizarBarthel();
+
+    const btnAddAntEmpresa = document.getElementById('btn_add_ant_empresa');
+    const hcAntEmpresaInput = document.getElementById('hc_ant_empresa');
+
+    if (btnAddAntEmpresa && hcAntEmpresaInput) {
+        btnAddAntEmpresa.addEventListener('click', function () {
+            const company = prompt('Ingrese el nombre de la empresa que desea agregar:');
+            if (company && company.trim()) {
+                hcAntEmpresaInput.value = company.trim();
+                hcAntEmpresaInput.focus();
+            }
+        });
+    }
 
     if (hcForm && hcObsPayload) {
         hcForm.addEventListener('submit', function () {

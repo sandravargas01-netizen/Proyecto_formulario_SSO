@@ -322,7 +322,71 @@ class PDFService:
             story.append(Paragraph("<b>Recomendaciones Médicas:</b>", normal_style))
             story.append(Paragraph(str(examen.recomendaciones_medicas).replace('\n', '<br/>'), normal_style))
             story.append(Spacer(1, 0.2*inch))
-        
+
+        if examen.observaciones:
+            observaciones_full = examen.observaciones.strip()
+            form_text, separator, metadata_text = observaciones_full.partition("\n---\n")
+            form_lines = [line.strip() for line in form_text.splitlines() if line.strip()]
+            if form_lines:
+                story.append(Paragraph("FORMULARIO DE HISTORIA CLÍNICA", heading_style))
+                table_data = []
+                for line in form_lines:
+                    if ':' in line:
+                        label, value = line.split(':', 1)
+                        table_data.append([
+                            Paragraph(label.strip(), normal_style),
+                            Paragraph(value.strip(), normal_style)
+                        ])
+                    else:
+                        table_data.append([
+                            Paragraph(line.strip(), normal_style),
+                            ''
+                        ])
+
+                form_table = Table(table_data, colWidths=[2.5*inch, 3.5*inch])
+                form_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f8f9fa')),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 9),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('GRID', (0, 0), (-1, -1), 0.25, colors.HexColor('#cccccc')),
+                ]))
+                story.append(form_table)
+                story.append(Spacer(1, 0.3*inch))
+
+        signature_sections = [
+            'Médico Laboral',
+            'Terapeuta Ocupacional',
+            'Fisioterapeuta',
+            'Psicólogo'
+        ]
+
+        for profession in signature_sections:
+            signature_table = Table([
+                [Paragraph('Nombre de Profesional', normal_style), Paragraph('', normal_style)],
+                [Paragraph('Profesión', normal_style), Paragraph(profession, normal_style)],
+                [Paragraph('Lic. Salud Ocupacional', normal_style), Paragraph('', normal_style)],
+                [Paragraph('Firma Digitalizada', normal_style), Paragraph('', normal_style)],
+            ], colWidths=[2.5*inch, 3.5*inch])
+            signature_table.setStyle(TableStyle([
+                ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f8f9fa')),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ]))
+            story.append(signature_table)
+            story.append(Spacer(1, 0.2*inch))
+
         # Pie de página
         story.append(Spacer(1, 0.3*inch))
         firma_text = f"Documento generado automáticamente el {datetime.now().strftime('%d de %B de %Y a las %H:%M')}"

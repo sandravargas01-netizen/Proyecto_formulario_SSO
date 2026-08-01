@@ -13,6 +13,9 @@
             <a href="{{ url_for('examen.descargar_examen_pdf', id=examen.id) }}" class="btn btn-outline-primary me-2" title="Descargar este examen en PDF">
                 <i class="bi bi-file-pdf"></i> Descargar PDF
             </a>
+            <a href="{{ url_for('examen.ver_examen_pdf', id=examen.id) }}" target="_blank" class="btn btn-outline-secondary me-2" title="Ver formulario en PDF">
+                <i class="bi bi-eye"></i> Ver formulario PDF
+            </a>
             {% if empleado %}
             <a href="{{ url_for('empleado.consulta_integral', id=empleado.id_empleado) }}" class="btn btn-secondary">Volver</a>
             {% else %}
@@ -127,15 +130,12 @@
     </div>
     {% endif %}
 
-    {% if observaciones_generales %}
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <h5 class="card-title">Observaciones Generales</h5>
-            <p>{{ observaciones_generales | replace('\\n', '<br>') | safe }}</p>
+            <h5 class="card-title">Vista PDF del formulario</h5>
+            <iframe src="{{ url_for('examen.ver_examen_pdf', id=examen.id) }}" style="width:100%; min-height:700px; border:1px solid #dee2e6;" title="Vista PDF del formulario"></iframe>
         </div>
     </div>
-    {% endif %}
-
 </div>
 
 {% endblock %}

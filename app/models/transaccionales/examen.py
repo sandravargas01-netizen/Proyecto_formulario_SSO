@@ -1,3 +1,5 @@
+from datetime import date
+
 from app import db
 
 
@@ -5,83 +7,60 @@ class Examen(db.Model):
 
     __tablename__ = "examenes"
 
-    id = db.Column(
+    id = db.Column(db.Integer, primary_key=True)
+
+    id_empleado = db.Column(
         db.Integer,
-        primary_key=True
+        db.ForeignKey("empleados.id_empleado")
     )
 
     tipo_examen = db.Column(
-        db.String(100),
+        db.String(120),
         nullable=False
     )
 
     fecha_examen = db.Column(
-        db.String(50),
-        nullable=False
-    )
-
-
-    id_empleado = db.Column(
-        db.Integer,
-        db.ForeignKey("empleados.id_empleado"),
-        nullable=False
+        db.String(10)
     )
 
     medico = db.Column(
-        db.String(100),
-        nullable=True
+        db.String(120)
     )
 
     ips = db.Column(
-        db.String(100),
-        nullable=True
-    )
-
-    estado = db.Column(
-        db.String(50),
-        nullable=True
+        db.String(120)
     )
 
     concepto_medico = db.Column(
-        db.String(255),
-        nullable=True
-    )
-
-    fecha_nuevo_control = db.Column(
-        db.String(50),
-        nullable=True
+        db.String(255)
     )
 
     observaciones = db.Column(
-        db.Text,
-        nullable=True
+        db.Text
     )
 
-    tipo_ingreso = db.Column(
-        db.String(100),
-        nullable=True
-    )
-
-    tipo_contrato = db.Column(
-        db.String(100),
-        nullable=True
+    estado = db.Column(
+        db.String(80)
     )
 
     concepto_de_aptitud = db.Column(
-        db.String(255),
-        nullable=True
+        db.String(80)
     )
 
     restricciones_medicas = db.Column(
-        db.Text,
-        nullable=True
+        db.Text
     )
 
     recomendaciones_medicas = db.Column(
-        db.Text,
-        nullable=True
+        db.Text
     )
 
-    def __repr__(self):
+    fecha_nuevo_control = db.Column(
+        db.String(10)
+    )
 
-        return f"<Examen {self.tipo_examen}>"
+    fecha_registro = db.Column(
+        db.String(10),
+        default=lambda: date.today().isoformat(),
+        nullable=False
+    )
