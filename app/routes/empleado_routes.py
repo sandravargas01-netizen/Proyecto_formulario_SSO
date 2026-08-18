@@ -12,10 +12,12 @@ from flask import (
 from app.models.transaccionales.examen import Examen
 from app.services.empleado_service import EmpleadoService
 from app.services.pdf_service import PDFService
+import json
 import re
 import os
 import io
 import zipfile
+from datetime import datetime
 from flask import send_file, flash
 
 
@@ -130,8 +132,10 @@ def consulta_integral(id):
 
     # extract pdf filename from observaciones if present and check file existence
     uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+    certificaciones = []
     for examen in examenes:
         examen.pdf_eps = None
+        examen.pdf_examen = None
         if examen.observaciones:
             m = re.search(r"Archivo PDF EPS:\s*(\S+)", examen.observaciones)
             if m:
@@ -140,10 +144,42 @@ def consulta_integral(id):
                 if os.path.exists(fpath):
                     examen.pdf_eps = fname
 
+            m = re.search(r"Archivo PDF Examen:\s*(\S+)", examen.observaciones)
+            if m:
+                fname = m.group(1)
+                fpath = os.path.join(uploads_dir, fname)
+                if os.path.exists(fpath):
+                    examen.pdf_examen = fname
+
+            for line in examen.observaciones.splitlines():
+                if not line.startswith('HCO_DATA:'):
+                    continue
+
+                try:
+                    hco_data = json.loads(line[len('HCO_DATA:'):].strip())
+                except json.JSONDecodeError:
+                    continue
+
+                actividades = hco_data.get('hco_cert_actividades')
+                concepto = hco_data.get('hco_cert_concepto')
+                vigencia = hco_data.get('hco_cert_vigencia')
+                observaciones = hco_data.get('hco_cert_observaciones')
+
+                if actividades or concepto or vigencia or observaciones:
+                    certificaciones.append({
+                        'fecha': examen.fecha_examen,
+                        'actividades': actividades or 'No especificadas',
+                        'concepto': concepto or 'No registrado',
+                        'vigencia': vigencia or 'No registrada',
+                        'observaciones': observaciones or 'Sin observaciones'
+                    })
+                break
+
     return render_template(
         "empleados/consulta_integral.html",
         empleado=empleado,
-        examenes=examenes
+        examenes=examenes,
+        certificaciones=certificaciones
     )
 
 
@@ -163,26 +199,40 @@ def descargar_historia(id):
     uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
 
     mem_zip = io.BytesIO()
+    added_files = set()
+
     with zipfile.ZipFile(mem_zip, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
-        # add a text file with the combined history
-        lines = []
-        for ex in examenes:
-            lines.append(f"Fecha: {ex.fecha_examen} | Tipo: {ex.tipo_examen} | Concepto: {ex.concepto_medico or ''}")
-            if ex.observaciones:
-                lines.append(f"Observaciones: {ex.observaciones}")
-            lines.append("\n")
+        summary_lines = [
+            f"Historia clínica ocupacional de {empleado.nombres or ''} {empleado.apellidos or ''}",
+            f"Cédula: {empleado.cedula or 'N/A'}",
+            f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+            "",
+        ]
 
-        zf.writestr('historia.txt', '\n'.join(lines))
-
-        # attach any PDFs found in observaciones
         for ex in examenes:
+            summary_lines.append(f"Fecha: {ex.fecha_examen} | Tipo: {ex.tipo_examen} | Concepto: {ex.concepto_medico or ''}")
             if ex.observaciones:
-                m = re.search(r"Archivo PDF EPS:\s*(\S+)", ex.observaciones)
-                if m:
-                    fname = m.group(1)
+                summary_lines.append(f"Observaciones: {ex.observaciones}")
+            summary_lines.append("")
+
+        zf.writestr('resumen_historia_clinica.txt', '\n'.join(summary_lines))
+
+        summary_pdf = PDFService.generar_historia_clinica_pdf(empleado, examenes)
+        summary_pdf.seek(0)
+        zf.writestr(f"historia_clinica_{empleado.cedula or empleado.id_empleado}.pdf", summary_pdf.read())
+
+        for ex in examenes:
+            if not ex.observaciones:
+                continue
+            for pattern in [r"Archivo PDF EPS:\s*(\S+)", r"Archivo PDF Examen:\s*(\S+)"]:
+                for match in re.finditer(pattern, ex.observaciones):
+                    fname = match.group(1).strip()
+                    if not fname or fname in added_files:
+                        continue
                     fpath = os.path.join(uploads_dir, fname)
                     if os.path.exists(fpath):
-                        zf.write(fpath, arcname=os.path.join('pdfs', fname))
+                        zf.write(fpath, arcname=os.path.join('documentos', fname))
+                        added_files.add(fname)
 
     mem_zip.seek(0)
     zip_name = f"historia_{empleado.cedula or empleado.id_empleado}.zip"

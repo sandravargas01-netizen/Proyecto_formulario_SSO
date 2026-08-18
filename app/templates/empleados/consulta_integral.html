@@ -13,18 +13,18 @@
         {% endif %}
     {% endfor %}
 
+    <div class="mb-3">
+        <div class="small text-muted fw-semibold">Gestión de Empleados</div>
+        <div class="small text-muted">Consultar</div>
+        <div class="small text-muted">Seleccionar empleado</div>
+    </div>
+
     {% set exam_periodico = namespace(item=None) %}
     {% for examen in examenes %}
         {% if exam_periodico.item is none and examen.tipo_examen and 'period' in examen.tipo_examen|lower %}
             {% set exam_periodico.item = examen %}
         {% endif %}
     {% endfor %}
-
-    <div class="mb-3">
-        <div class="small text-muted fw-semibold">Gestión de Empleados</div>
-        <div class="small text-muted">Consultar</div>
-        <div class="small text-muted">Seleccionar empleado</div>
-    </div>
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body py-3 text-center">
@@ -38,6 +38,7 @@
             <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="examenes-ocupacionales">🩺 Exámenes Ocupacionales</button>
             <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="sistemas-vigilancia">🦺 Sistemas de Vigilancia Epidemiológica</button>
             <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="historia-clinica">📄 Formulario de Historia Clínica Ocupacional</button>
+            <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="certificaciones">📜 Certificaciones</button>
             <button type="button" class="btn btn-sm btn-outline-primary nav-modulo-btn" data-target="documentos">📁 Documentos</button>
         </div>
     </div>
@@ -69,6 +70,40 @@
         </div>
     </div>
 
+    <div id="certificaciones" class="card shadow-sm mb-4 modulo-vista d-none">
+        <div class="card-body">
+            <h5 class="card-title mb-3">📜 Certificaciones ocupacionales</h5>
+            {% if certificaciones %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Actividades certificadas</th>
+                                <th>Concepto</th>
+                                <th>Vigencia</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for certificacion in certificaciones %}
+                            <tr>
+                                <td>{{ certificacion.fecha or 'No registrada' }}</td>
+                                <td>{{ certificacion.actividades }}</td>
+                                <td>{{ certificacion.concepto }}</td>
+                                <td>{{ certificacion.vigencia }}</td>
+                                <td>{{ certificacion.observaciones }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">No hay certificaciones ocupacionales registradas.</p>
+            {% endif %}
+        </div>
+    </div>
+
     <div id="examenes-ocupacionales" class="card shadow-sm mb-4 modulo-vista d-none">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
@@ -87,6 +122,9 @@
                         <div class="d-flex gap-1 flex-wrap">
                             <a href="{{ url_for('examen.detalle', id=examen.id) }}" class="btn btn-sm btn-outline-primary">Ver detalle</a>
                             <a href="{{ url_for('examen.descargar_examen_pdf', id=examen.id) }}" class="btn btn-sm btn-outline-secondary" title="Descargar PDF">PDF Examen</a>
+                            {% if examen.pdf_examen %}
+                                <a href="{{ url_for('examen.pdf_file', filename=examen.pdf_examen) }}" class="btn btn-sm btn-outline-success">Descargar información</a>
+                            {% endif %}
                             {% if examen.pdf_eps %}
                                 <a href="{{ url_for('examen.pdf_file', filename=examen.pdf_eps) }}" class="btn btn-sm btn-outline-secondary">PDF EPS</a>
                             {% endif %}
@@ -121,9 +159,50 @@
             <p class="mb-3">Diligencia la historia clínica ocupacional por secciones y guarda el registro directamente para este empleado.</p>
 
             <form method="POST" action="{{ url_for('examen.crear_para_empleado', empleado_id=empleado.id_empleado) }}" enctype="multipart/form-data" id="hc_form">
-                <input type="hidden" name="tipo_novedad" value="periodico_ocupacional">
+                <input type="hidden" name="tipo_novedad" id="hc_tipo_novedad" value="periodico_ocupacional">
                 <input type="hidden" name="estado_novedad" value="finalizado">
                 <textarea name="observaciones" id="hc_observaciones_payload" class="d-none"></textarea>
+
+                <div class="border rounded p-3 mb-3 bg-light">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <h6 class="fw-bold mb-0 text-primary">Resumen de la evaluación</h6>
+                        <span class="badge bg-primary-subtle text-primary-emphasis">Resolución 1843/2025</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo de evaluación</label>
+                            <select name="hc_tipo_evaluacion" class="form-select hc-observable" data-label="Tipo de evaluación">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Pre-ingreso">Pre-ingreso</option>
+                                <option value="Periódica">Periódica</option>
+                                <option value="Egreso">Egreso</option>
+                                <option value="Retorno laboral">Retorno laboral</option>
+                                <option value="Post-incapacidad">Post-incapacidad</option>
+                                <option value="Seguimiento">Seguimiento</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Empresa</label>
+                            <input type="text" name="hc_empresa" class="form-control hc-observable" data-label="Empresa">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cargo actual</label>
+                            <input type="text" name="hc_cargo_actual_resumen" class="form-control hc-observable" data-label="Cargo actual">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">EPS / ARL</label>
+                            <input type="text" name="hc_eps_arl" class="form-control hc-observable" data-label="EPS / ARL">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Motivo de evaluación</label>
+                            <textarea name="hc_motivo_evaluacion" class="form-control hc-observable" data-label="Motivo de evaluación" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Observaciones generales</label>
+                            <textarea name="hc_observaciones_generales" class="form-control hc-observable" data-label="Observaciones generales" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="border rounded p-3 mb-3">
                     <h6 class="fw-bold mb-3 text-primary">Datos Básicos</h6>
@@ -185,6 +264,32 @@
                         <div class="col-md-4">
                             <label class="form-label">Fecha de ingreso a Univalle</label>
                             <input type="date" name="hc_fecha_ingreso_univalle" class="form-control hc-observable" data-label="Fecha de ingreso a Univalle">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-3 text-primary">Sección 2. Antecedentes y examen físico</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Antecedentes patológicos</label>
+                            <textarea name="hc_antecedentes_patologicos" class="form-control hc-observable" data-label="Antecedentes patológicos" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Antecedentes familiares</label>
+                            <textarea name="hc_antecedentes_familiares" class="form-control hc-observable" data-label="Antecedentes familiares" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Hábitos y estilo de vida</label>
+                            <textarea name="hc_habitos_vida" class="form-control hc-observable" data-label="Hábitos y estilo de vida" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Examen físico general</label>
+                            <textarea name="hc_examen_fisico_general" class="form-control hc-observable" data-label="Examen físico general" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Hallazgos relevantes / observaciones clínicas</label>
+                            <textarea name="hc_hallazgos_relevantes" class="form-control hc-observable" data-label="Hallazgos relevantes" rows="3"></textarea>
                         </div>
                     </div>
                 </div>
@@ -1453,6 +1558,20 @@ document.addEventListener('DOMContentLoaded', function () {
         hcForm.addEventListener('submit', function () {
             const lines = [];
             const fields = hcForm.querySelectorAll('.hc-observable');
+            const tipoEvaluacion = hcForm.querySelector('[name="hc_tipo_evaluacion"]');
+            const tipoNovedad = document.getElementById('hc_tipo_novedad');
+
+            if (tipoEvaluacion && tipoNovedad) {
+                const tipos = {
+                    'Pre-ingreso': 'pre_ingreso',
+                    'Periódica': 'periodico_ocupacional',
+                    'Egreso': 'egreso',
+                    'Retorno laboral': 'retorno_laboral',
+                    'Post-incapacidad': 'post_incapacidad',
+                    'Seguimiento': 'periodico_ocupacional'
+                };
+                tipoNovedad.value = tipos[tipoEvaluacion.value] || 'periodico_ocupacional';
+            }
 
             fields.forEach(function (field) {
                 const label = field.getAttribute('data-label');

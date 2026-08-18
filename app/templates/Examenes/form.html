@@ -5,33 +5,19 @@
 <div class="container-fluid">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Registro de novedad</h2>
+        <h2>Registro de examen</h2>
         <a href="{% if empleado %}{{ url_for('empleado.consulta_integral', id=empleado.id_empleado) }}{% else %}{{ url_for('examen.listar') }}{% endif %}" class="btn btn-secondary">Volver</a>
     </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
             <form method="POST" enctype="multipart/form-data">
+                {% include 'examenes/_hco_modules.html' %}
+                <input type="hidden" name="tipo_novedad" value="pre_ingreso">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Fecha de novedad</label>
                         <input type="date" name="fecha_novedad" class="form-control" required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Tipo de novedad</label>
-                        <select name="tipo_novedad" id="tipo_novedad" class="form-select" required>
-                            <option value="">-- Seleccione --</option>
-                            <option value="periodico_ocupacional">Examen periódico ocupacional</option>
-                            <option value="ingreso">Examen de ingreso</option>
-                            <option value="egreso">Examen de egreso</option>
-                            <option value="reintegro">Reintegro</option>
-                            <option value="post_incapacidad">Post incapacidad</option>
-                            <option value="cambio_cargo">Cambio de cargo</option>
-                            <option value="sistema_vigilancia">Sistema de vigilancia epidemiológica (examen)</option>
-                            <option value="solicitado_eps">Solicitado por la EPS</option>
-                            <option value="otro">Otro</option>
-                        </select>
                     </div>
 
                     <div class="col-md-6">
@@ -142,14 +128,20 @@ document.addEventListener('DOMContentLoaded', function(){
     const sv = document.getElementById('sv_section');
     const eps = document.getElementById('eps_section');
     const otro = document.getElementById('otro_section');
-    const periodico = document.getElementById('periodico_actions');
+    const periodico = document.getElementById('periodico_section');
+    const tipoExamenSection = document.getElementById('tipo_examen_section');
 
     function updateVisibility(){
         const val = tipo.value;
         sv.style.display = (val === 'sistema_vigilancia') ? 'block' : 'none';
         eps.style.display = (val === 'solicitado_eps') ? 'block' : 'none';
         otro.style.display = (val === 'otro') ? 'block' : 'none';
-        periodico.style.display = (val === 'periodico_ocupacional') ? 'block' : 'none';
+        if (periodico) {
+            periodico.style.display = (val === 'periodico_ocupacional') ? 'block' : 'none';
+        }
+        if (tipoExamenSection) {
+            tipoExamenSection.hidden = val === 'pre_ingreso';
+        }
     }
 
     if(tipo){

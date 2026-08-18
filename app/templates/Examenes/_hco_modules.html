@@ -1,0 +1,230 @@
+{% macro personal_block() %}
+<div class="hco-personal-section">
+    <div class="card border-primary mb-3">
+        <div class="card-header bg-primary text-white">Datos personales del trabajador</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4"><label class="form-label">Nombre completo</label><input type="text" name="hco_personal_nombre" class="form-control" value="{% if empleado %}{{ empleado.nombres }} {{ empleado.apellidos }}{% endif %}" readonly></div>
+                <div class="col-md-2"><label class="form-label">Tipo de documento</label><select name="hco_personal_tipo_documento" class="form-select"><option value="">--</option><option>CC</option><option>CE</option><option>PA</option><option>PEP</option><option>TI</option></select></div>
+                <div class="col-md-3"><label class="form-label">Numero de documento</label><input type="text" name="hco_personal_documento" class="form-control" value="{% if empleado %}{{ empleado.cedula }}{% endif %}" readonly></div>
+                <div class="col-md-3"><label class="form-label">Fecha de nacimiento</label><input type="date" name="hco_personal_fecha_nacimiento" class="form-control" value="{% if empleado and empleado.fecha_nacimiento %}{{ empleado.fecha_nacimiento.strftime('%Y-%m-%d') }}{% endif %}"></div>
+                <div class="col-md-2"><label class="form-label">Edad</label><input type="number" name="hco_personal_edad" min="15" max="100" class="form-control"></div>
+                <div class="col-md-2"><label class="form-label">Sexo biologico</label><select name="hco_personal_sexo" class="form-select"><option value="">--</option><option>Femenino</option><option>Masculino</option></select></div>
+                <div class="col-md-4"><label class="form-label">Empresa</label><input type="text" name="hco_personal_empresa" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">Cargo</label><input type="text" name="hco_personal_cargo" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">EPS / ARL</label><input type="text" name="hco_personal_eps_arl" class="form-control"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+<div class="col-12" id="hco_exam_name" style="display:none;">
+    <h4 class="text-primary mb-3"></h4>
+</div>
+
+<div class="col-12 hco-panel" data-hco-module="med">
+    {{ personal_block() }}
+    <div class="card border-primary">
+        <div class="card-header bg-primary text-white">Valoracion medica ocupacional</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3"><label class="form-label">Hora</label><input type="time" name="hco_med_hora" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Departamento</label><select name="hco_med_departamento" class="form-select"><option value="">-- Seleccione --</option><option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option><option>Caquetá</option><option>Casanare</option><option>Cauca</option><option>Cesar</option><option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option><option>Bogotá D.C.</option><option>Guainía</option><option>Guaviare</option><option>Huila</option><option>La Guajira</option><option>Magdalena</option><option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option><option>Quindío</option><option>Risaralda</option><option>San Andrés y Providencia</option><option>Santander</option><option>Sucre</option><option>Tolima</option><option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option></select></div>
+                <div class="col-md-3"><label class="form-label">Ciudad</label><select name="hco_med_ciudad" class="form-select"><option value="">-- Seleccione --</option><option>Leticia</option><option>Medellín</option><option>Arauca</option><option>Barranquilla</option><option>Cartagena</option><option>Tunja</option><option>Manizales</option><option>Florencia</option><option>Yopal</option><option>Popayán</option><option>Valledupar</option><option>Quibdó</option><option>Montería</option><option>Bogotá D.C.</option><option>Puerto Carreño</option><option>Inírida</option><option>San José del Guaviare</option><option>Neiva</option><option>Riohacha</option><option>Santa Marta</option><option>Villavicencio</option><option>Pasto</option><option>Cúcuta</option><option>Mocoa</option><option>Armenia</option><option>Pereira</option><option>San Andrés</option><option>Bucaramanga</option><option>Sincelejo</option><option>Ibagué</option><option>Cali</option><option>Mitú</option></select></div>
+                <div class="col-md-3"><label class="form-label">Tarjeta profesional</label><input type="text" name="hco_med_tarjeta" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Clase de riesgo</label><select name="hco_med_riesgo" class="form-select"><option value="">--</option><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option></select></div>
+                <div class="col-md-3"><label class="form-label">Peso (kg)</label><input type="number" step="0.1" name="hco_med_peso" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Talla (cm)</label><input type="number" name="hco_med_talla" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Tension arterial</label><input type="text" name="hco_med_tension" placeholder="120/80" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Pulso (lpm)</label><input type="number" name="hco_med_pulso" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">SpO2 (%)</label><input type="number" name="hco_med_spo2" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Temperatura (C)</label><input type="number" step="0.1" name="hco_med_temperatura" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Antecedentes personales</label><textarea name="hco_med_antecedentes" rows="3" class="form-control"></textarea></div>
+                <div class="col-md-6"><label class="form-label">Medicamentos y alergias</label><textarea name="hco_med_medicamentos_alergias" rows="3" class="form-control"></textarea></div>
+                <div class="col-12"><label class="form-label">Examen fisico por sistemas</label><textarea name="hco_med_examen_fisico" rows="4" class="form-control" placeholder="Cabeza y cuello, cardiovascular, respiratorio, osteomuscular, neurologico y piel."></textarea></div>
+                <div class="col-md-6"><label class="form-label">Diagnosticos CIE-10</label><textarea name="hco_med_diagnosticos" rows="3" class="form-control" placeholder="Codigo y diagnostico"></textarea></div>
+                <div class="col-md-6"><label class="form-label">Concepto medico ampliado</label><textarea name="hco_med_concepto" rows="3" class="form-control"></textarea></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 hco-panel" data-hco-module="psic">
+    {{ personal_block() }}
+    <div class="card border-secondary">
+        <div class="card-header bg-secondary text-white">Valoracion de psicologia ocupacional</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Tipo de valoracion</label><select name="hco_psic_tipo" class="form-select"><option value="">--</option><option>Valoracion de riesgo psicosocial</option><option>Reintegro laboral</option><option>Post-incapacidad</option><option>Seguimiento</option><option>Programa SVE psicosocial</option></select></div>
+                <div class="col-md-6"><label class="form-label">Psicologo y tarjeta profesional</label><input type="text" name="hco_psic_profesional" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Motivo de consulta</label><textarea name="hco_psic_motivo" rows="3" class="form-control"></textarea></div>
+                <div class="col-md-6"><label class="form-label">Antecedentes de salud mental</label><textarea name="hco_psic_antecedentes" rows="3" class="form-control"></textarea></div>
+                <div class="col-md-4"><label class="form-label">Nivel de riesgo psicosocial</label><select name="hco_psic_riesgo" class="form-select"><option value="">--</option><option>Sin riesgo</option><option>Bajo</option><option>Medio</option><option>Alto</option><option>Muy alto</option></select></div>
+                <div class="col-md-4"><label class="form-label">Estado de animo</label><select name="hco_psic_animo" class="form-select"><option value="">--</option><option>Eutimico</option><option>Ansioso</option><option>Deprimido</option><option>Irritable</option></select></div>
+                <div class="col-md-4"><label class="form-label">Aptitud psicologica</label><select name="hco_psic_aptitud" class="form-select"><option value="">--</option><option>Apto</option><option>Apto con seguimiento</option><option>Apto con restricciones</option><option>No apto temporalmente</option><option>Requiere remision</option></select></div>
+                <div class="col-12"><label class="form-label">Diagnostico y plan de intervencion</label><textarea name="hco_psic_plan" rows="4" class="form-control"></textarea></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 hco-panel" data-hco-module="to">
+    {{ personal_block() }}
+    <div class="card border-info">
+        <div class="card-header bg-info text-white">Terapia ocupacional y reintegro</div>
+        <div class="card-body"><div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Roles y actividades afectadas</label><textarea name="hco_to_roles_avd" rows="3" class="form-control"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Rutina y motivaciones laborales</label><textarea name="hco_to_rutina" rows="3" class="form-control"></textarea></div>
+            <div class="col-md-4"><label class="form-label">Tolerancia sedente</label><select name="hco_to_sedente" class="form-select"><option value="">--</option><option>Menos de 30 min</option><option>30 a 60 min</option><option>1 a 2 horas</option><option>Mas de 2 horas</option></select></div>
+            <div class="col-md-4"><label class="form-label">Destreza manual</label><select name="hco_to_destreza" class="form-select"><option value="">--</option><option>Normal</option><option>Leve disminucion</option><option>Moderada</option><option>Severa</option></select></div>
+            <div class="col-md-4"><label class="form-label">Tipo de reintegro recomendado</label><select name="hco_to_reintegro" class="form-select"><option value="">--</option><option>Inmediato al mismo cargo</option><option>Gradual al mismo cargo</option><option>Cargo alternativo temporal</option><option>No viable actualmente</option></select></div>
+            <div class="col-12"><label class="form-label">Adaptaciones y concepto de terapia ocupacional</label><textarea name="hco_to_concepto" rows="3" class="form-control"></textarea></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="col-12 hco-panel" data-hco-module="fis">
+    {{ personal_block() }}
+    <div class="card border-warning">
+        <div class="card-header bg-warning">Fisioterapia ocupacional</div>
+        <div class="card-body"><div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Region anatomica</label><input type="text" name="hco_fis_region" class="form-control"></div>
+            <div class="col-md-4"><label class="form-label">Diagnostico de referencia</label><input type="text" name="hco_fis_diagnostico" class="form-control"></div>
+            <div class="col-md-4"><label class="form-label">EVA actividad laboral (0-10)</label><input type="number" min="0" max="10" name="hco_fis_eva" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">ROM, fuerza y pruebas especiales</label><textarea name="hco_fis_evaluacion" rows="3" class="form-control"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Restricciones fisicas y tratamiento</label><textarea name="hco_fis_tratamiento" rows="3" class="form-control"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Concepto de fisioterapia</label><select name="hco_fis_concepto" class="form-select"><option value="">--</option><option>Apto sin restricciones</option><option>Apto con restricciones fisicas</option><option>Reintegro gradual</option><option>No apto actualmente</option></select></div>
+            <div class="col-md-6"><label class="form-label">Proxima revision</label><input type="date" name="hco_fis_proxima_revision" class="form-control"></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="col-12 hco-panel" data-hco-module="sve">
+    {{ personal_block() }}
+    <div class="card border-success">
+        <div class="card-header bg-success text-white">Sistemas de vigilancia epidemiologica</div>
+        <div class="card-body"><div class="row g-3">
+            <div class="col-12"><label class="form-label">Programas SVE activos</label><div class="row">
+                {% for value, label in [('ruido','Conservacion auditiva / ruido'), ('radiaciones','Radiaciones'), ('voz','Cuidado de la voz'), ('biomecanico','Biomecanico / osteomuscular'), ('biologico','Riesgo biologico'), ('psicosocial','Riesgo psicosocial'), ('quimico','Riesgo quimico')] %}
+                <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="hco_sve_programas" value="{{ value }}" id="hco_sve_{{ value }}"><label class="form-check-label" for="hco_sve_{{ value }}">{{ label }}</label></div></div>
+                {% endfor %}
+            </div></div>
+            <div class="col-md-6"><label class="form-label">Criterio de inclusion</label><select name="hco_sve_criterio" class="form-select"><option value="">--</option><option>Exposicion al riesgo</option><option>Sintomas relacionados</option><option>Diagnostico confirmado</option><option>Post-accidente laboral</option><option>Seguimiento post-tratamiento</option></select></div>
+            <div class="col-md-6"><label class="form-label">Periodicidad del seguimiento</label><select name="hco_sve_periodicidad" class="form-select"><option value="">--</option><option>Mensual</option><option>Trimestral</option><option>Semestral</option><option>Anual</option><option>Segun evolucion clinica</option></select></div>
+            <div class="col-12"><label class="form-label">Hallazgos, medidas de control y plan SVE</label><textarea name="hco_sve_plan" rows="4" class="form-control"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Proxima valoracion SVE</label><input type="date" name="hco_sve_proxima" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">Responsable del seguimiento</label><input type="text" name="hco_sve_responsable" class="form-control"></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="col-12 hco-panel" data-hco-module="cert">
+    {{ personal_block() }}
+    <div class="card border-dark">
+        <div class="card-header bg-dark text-white">Certificaciones reglamentarias</div>
+        <div class="card-body"><div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Actividades certificadas</label><textarea name="hco_cert_actividades" rows="3" class="form-control" placeholder="Alturas, espacios confinados, conduccion, sustancias peligrosas, alimentos, buceo, turnos o respirador."></textarea></div>
+            <div class="col-md-6"><label class="form-label">Concepto de aptitud y restricciones</label><textarea name="hco_cert_concepto" rows="3" class="form-control"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Vigencia hasta</label><input type="date" name="hco_cert_vigencia" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">Observaciones de certificacion</label><textarea name="hco_cert_observaciones" rows="2" class="form-control"></textarea></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="col-12 hco-panel" data-hco-module="concat">
+    {{ personal_block() }}
+    <div class="card border-success">
+        <div class="card-header bg-success text-white">Concepto multidisciplinario integrador</div>
+        <div class="card-body"><div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Concepto final</label><select name="hco_concat_concepto" class="form-select"><option value="">--</option><option>Apto - retorno inmediato</option><option>Apto con restricciones</option><option>Reintegro gradual</option><option>Reubicacion temporal</option><option>Reubicacion definitiva</option><option>No apto</option><option>Pendiente</option></select></div>
+            <div class="col-md-6"><label class="form-label">Origen de la condicion</label><select name="hco_concat_origen" class="form-select"><option value="">--</option><option>Comun</option><option>Laboral presunto</option><option>Laboral confirmado</option><option>En proceso de calificacion</option></select></div>
+            <div class="col-12"><label class="form-label">Restricciones consolidadas y plan de reintegro</label><textarea name="hco_concat_plan" rows="5" class="form-control"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Fecha de revision</label><input type="date" name="hco_concat_revision" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">Coordinador del equipo</label><input type="text" name="hco_concat_coordinador" class="form-control"></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="col-12">
+    <hr>
+    <h5 class="text-primary">Historia Clinica Ocupacional Multidisciplinaria</h5>
+    <p class="text-muted small mb-3">Campos complementarios basados en la Resolucion 1843 de 2025.</p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const typeSelect = document.getElementById('tipo_novedad');
+    const panels = document.querySelectorAll('.hco-panel');
+    const examName = document.getElementById('hco_exam_name');
+    const examNameTitle = examName ? examName.querySelector('h4') : null;
+    const examLabels = {
+        periodico_ocupacional: 'Examen periódico ocupacional',
+        pre_ingreso: 'Examen de pre-ingreso',
+        ingreso: 'Examen de ingreso',
+        egreso: 'Examen de egreso',
+        reintegro: 'Examen de reintegro laboral',
+        retorno_laboral: 'Examen de retorno laboral',
+        post_incapacidad: 'Examen post-incapacidad',
+        cambio_cargo: 'Examen por cambio de cargo',
+        sistema_vigilancia: 'Examen de sistema de vigilancia epidemiológica',
+        valoracion_psicosocial: 'Valoración de psicología ocupacional',
+        terapia_ocupacional: 'Valoración de terapia ocupacional',
+        fisioterapia: 'Valoración de fisioterapia ocupacional',
+        certificacion_alto_riesgo: 'Certificación de actividad de alto riesgo',
+        integrador_multidisciplinario: 'Concepto multidisciplinario integrador',
+        solicitado_eps: 'Examen solicitado por la EPS',
+        otro: 'Examen ocupacional'
+    };
+    const updateHcoPanels = function () {
+        const value = typeSelect ? typeSelect.value : '';
+        if (examName && examNameTitle) {
+            examNameTitle.textContent = examLabels[value] || '';
+            examName.style.display = examLabels[value] ? 'block' : 'none';
+        }
+        panels.forEach(function (panel) {
+            const module = panel.dataset.hcoModule;
+            const moduleTypes = {
+                med: ['periodico_ocupacional', 'pre_ingreso', 'ingreso', 'egreso', 'reintegro', 'retorno_laboral', 'post_incapacidad', 'cambio_cargo'],
+                sve: ['sistema_vigilancia'],
+                psic: ['valoracion_psicosocial'],
+                to: ['terapia_ocupacional'],
+                fis: ['fisioterapia'],
+                cert: ['certificacion_alto_riesgo'],
+                concat: ['integrador_multidisciplinario']
+            };
+            const visible = (moduleTypes[module] || []).includes(value);
+            panel.style.display = visible ? 'block' : 'none';
+        });
+    };
+    if (typeSelect) {
+        typeSelect.addEventListener('change', updateHcoPanels);
+        updateHcoPanels();
+    }
+
+    const hcoForm = document.querySelector('form[method="POST"]');
+    if (hcoForm) {
+        hcoForm.addEventListener('submit', function (event) {
+            const fields = Array.from(hcoForm.querySelectorAll('input, select, textarea'));
+            const emptyField = fields.find(function (field) {
+                if (field.type === 'hidden' || field.type === 'file' || field.type === 'checkbox' || field.type === 'radio' || field.disabled || field.offsetParent === null) {
+                    return false;
+                }
+
+                return !String(field.value || '').trim();
+            });
+
+            fields.forEach(function (field) {
+                field.classList.remove('is-invalid');
+            });
+
+            if (emptyField) {
+                event.preventDefault();
+                emptyField.classList.add('is-invalid');
+                emptyField.focus();
+                emptyField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+});
+</script>

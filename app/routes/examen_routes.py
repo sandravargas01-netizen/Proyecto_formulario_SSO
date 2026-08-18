@@ -7,7 +7,9 @@ from flask import (
     send_from_directory,
     send_file
 )
+import json
 import os
+from datetime import date
 from werkzeug.utils import secure_filename
 import os
 
@@ -27,12 +29,19 @@ examen_bp = Blueprint(
 
 NOVEDAD_LABELS = {
     "periodico_ocupacional": "Examen periódico ocupacional",
+    "pre_ingreso": "Examen de pre-ingreso",
     "ingreso": "Examen de ingreso",
     "egreso": "Examen de egreso",
     "reintegro": "Reintegro",
+    "retorno_laboral": "Retorno laboral",
     "post_incapacidad": "Post incapacidad",
     "cambio_cargo": "Cambio de cargo",
     "sistema_vigilancia": "Sistema de vigilancia epidemiológica",
+    "valoracion_psicosocial": "Valoración de psicología ocupacional",
+    "terapia_ocupacional": "Valoración de terapia ocupacional",
+    "fisioterapia": "Valoración de fisioterapia ocupacional",
+    "certificacion_alto_riesgo": "Certificación de actividad de alto riesgo",
+    "integrador_multidisciplinario": "Concepto multidisciplinario integrador",
     "solicitado_eps": "Solicitado por la EPS",
     "otro": "Otro"
 }
@@ -50,8 +59,16 @@ def _parse_novedad_metadata(observaciones):
 
     metadata = {}
 
+    for line in detalle.splitlines():
+        if line.startswith("HCO_DATA:"):
+            try:
+                metadata["hco_data"] = json.loads(line[len("HCO_DATA:"):].strip())
+            except json.JSONDecodeError:
+                metadata["hco_data"] = {}
+            break
+
     field_map = {
-        "Tipo de novedad": "tipo_novedad",
+        "Tipo de examen": "tipo_novedad",
         "Estado novedad": "estado_novedad",
         "Riesgos": "riesgos",
         "Especialidad EPS": "especialidad_eps",
@@ -207,8 +224,8 @@ def crear_para_empleado(empleado_id):
 
         # map form fields to model
         tipo_novedad = request.form.get('tipo_novedad')
-        fecha_novedad = request.form.get('fecha_novedad')
-        estado_novedad = request.form.get('estado_novedad')
+        fecha_novedad = request.form.get('fecha_novedad') or date.today().isoformat()
+        estado_novedad = request.form.get('estado_novedad') or 'pendiente'
         riesgos = request.form.getlist('riesgo[]') or request.form.getlist('riesgo')
         especialidad_eps = request.form.get('especialidad_eps')
         observaciones_eps = request.form.get('observaciones_eps')
@@ -228,7 +245,7 @@ def crear_para_empleado(empleado_id):
         # Consolidate extra fields into observaciones to avoid DB schema changes
         extra = []
         if tipo_novedad:
-            extra.append(f"Tipo de novedad: {tipo_novedad}")
+            extra.append(f"Tipo de examen: {tipo_novedad}")
         if estado_novedad:
             extra.append(f"Estado novedad: {estado_novedad}")
         if riesgos:
@@ -241,6 +258,20 @@ def crear_para_empleado(empleado_id):
             extra.append(f"Descripcion otro: {descripcion_otro}")
         if pdf_filename:
             extra.append(f"Archivo PDF EPS: {pdf_filename}")
+
+        hco_data = {}
+        for key, values in request.form.to_dict(flat=False).items():
+            if not key.startswith("hco_"):
+                continue
+
+            cleaned_values = [value.strip() for value in values if value.strip()]
+            if not cleaned_values:
+                continue
+
+            hco_data[key] = cleaned_values if len(cleaned_values) > 1 else cleaned_values[0]
+
+        if hco_data:
+            extra.append(f"HCO_DATA: {json.dumps(hco_data, ensure_ascii=True)}")
 
         base_observ = request.form.get('observaciones') or ''
         combined_observ = base_observ
@@ -256,8 +287,6 @@ def crear_para_empleado(empleado_id):
             concepto_medico=request.form.get('concepto_medico'),
             fecha_nuevo_control=request.form.get('fecha_nuevo_control'),
             observaciones=combined_observ,
-            tipo_ingreso=request.form.get('tipo_ingreso'),
-            tipo_contrato=request.form.get('tipo_contrato'),
             concepto_de_aptitud=_normalize_concepto_aptitud(
                 request.form.get('concepto_de_aptitud') or request.form.get('concepto_medico')
             ),
@@ -268,6 +297,18 @@ def crear_para_empleado(empleado_id):
 
         db.session.add(examen)
 
+        db.session.commit()
+
+        pdf_filename = f"examen_{empleado.cedula or empleado.id_empleado}_{examen.id}.pdf"
+        uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+        os.makedirs(uploads_dir, exist_ok=True)
+        pdf_path = os.path.join(uploads_dir, pdf_filename)
+        pdf_buffer = PDFService.generar_examen_pdf(examen, empleado)
+        pdf_buffer.seek(0)
+        with open(pdf_path, 'wb') as generated_pdf:
+            generated_pdf.write(pdf_buffer.read())
+
+        examen.observaciones = (examen.observaciones or '') + f"\nArchivo PDF Examen: {pdf_filename}"
         db.session.commit()
 
         return redirect(

@@ -38,9 +38,9 @@
 
             <form method="get" action="{{ url_for('empleado.listar') }}">
 
-                <div class="row">
+                <div class="row g-3">
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label>Cédula</label>
                         <input
                             type="text"
@@ -50,7 +50,7 @@
                             placeholder="Buscar por cédula">
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label>Nombre</label>
                         <input
                             type="text"
@@ -60,13 +60,19 @@
                             placeholder="Buscar por nombre">
                     </div>
 
-                    <div class="col-md-4">
-                        <label>Estado</label>
+                    <div class="col-md-6">
+                        <label>Estado / Tipo de examen</label>
                         <select name="estado" class="form-select">
                             <option value="" {% if filtros.estado == '' %}selected{% endif %}>Todos</option>
                             <option value="Activo" {% if filtros.estado == 'Activo' %}selected{% endif %}>Activo</option>
                             <option value="Retirado" {% if filtros.estado == 'Retirado' %}selected{% endif %}>Retirado</option>
                             <option value="Suspendido" {% if filtros.estado == 'Suspendido' %}selected{% endif %}>Suspendido</option>
+                            <option value="1" {% if filtros.estado == '1' %}selected{% endif %}>1 - Pre-ingreso</option>
+                            <option value="2" {% if filtros.estado == '2' %}selected{% endif %}>2 - Periódica</option>
+                            <option value="3" {% if filtros.estado == '3' %}selected{% endif %}>3 - Egreso</option>
+                            <option value="4" {% if filtros.estado == '4' %}selected{% endif %}>4 - Retorno laboral</option>
+                            <option value="5" {% if filtros.estado == '5' %}selected{% endif %}>5 - Post-incapacidad</option>
+                            <option value="6" {% if filtros.estado == '6' %}selected{% endif %}>6 - Seguimiento</option>
                         </select>
                     </div>
 
@@ -79,7 +85,7 @@
                 </div>
 
                 <p class="text-muted small mt-2 mb-0">
-                    Use la búsqueda por cédula o nombre para localizar al trabajador y luego seleccione Consultar.
+                    Use la búsqueda por cédula, nombre o estado/tipo de examen para localizar al trabajador y luego seleccione Consultar.
                 </p>
 
             </form>

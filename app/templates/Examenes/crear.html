@@ -5,41 +5,35 @@
 <div class="container-fluid">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Registro de novedad</h2>
-        <a href="{{ url_for('empleado.consulta_integral', id=empleado.id_empleado) }}" class="btn btn-secondary">Volver</a>
+        
+       
     </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
             <form method="POST" enctype="multipart/form-data">
+                {% include 'examenes/_hco_modules.html' %}
                 <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Fecha de novedad</label>
-                        <input type="date" name="fecha_novedad" class="form-control" required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Tipo de novedad</label>
+                    <div class="col-md-6" id="tipo_examen_section">
+                        <label class="form-label">Tipo de examen</label>
                         <select name="tipo_novedad" id="tipo_novedad" class="form-select" required>
                             <option value="">-- Seleccione --</option>
                             <option value="periodico_ocupacional">Examen periódico ocupacional</option>
+                            <option value="pre_ingreso">Examen de pre-ingreso</option>
                             <option value="ingreso">Examen de ingreso</option>
                             <option value="egreso">Examen de egreso</option>
                             <option value="reintegro">Reintegro</option>
+                            <option value="retorno_laboral">Retorno laboral</option>
                             <option value="post_incapacidad">Post incapacidad</option>
                             <option value="cambio_cargo">Cambio de cargo</option>
                             <option value="sistema_vigilancia">Sistema de vigilancia epidemiológica (examen)</option>
+                            <option value="valoracion_psicosocial">Valoración de psicología ocupacional</option>
+                            <option value="terapia_ocupacional">Valoración de terapia ocupacional</option>
+                            <option value="fisioterapia">Valoración de fisioterapia ocupacional</option>
+                            <option value="certificacion_alto_riesgo">Certificación de actividad de alto riesgo</option>
+                            <option value="integrador_multidisciplinario">Concepto multidisciplinario integrador</option>
                             <option value="solicitado_eps">Solicitado por la EPS</option>
                             <option value="otro">Otro</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Estado</label>
-                        <select name="estado_novedad" class="form-select">
-                            <option value="pendiente">Pendiente</option>
-                            <option value="en_proceso">En proceso</option>
-                            <option value="finalizado">Finalizado</option>
                         </select>
                     </div>
 
@@ -90,10 +84,6 @@
                         <textarea name="descripcion_otro" class="form-control" rows="3"></textarea>
                     </div>
 
-                    <div class="col-12">
-                        <label class="form-label">Observaciones generales</label>
-                        <textarea name="observaciones" class="form-control" rows="4"></textarea>
-                    </div>
                     <div class="col-12" id="periodico_section" style="display:none;">
 
     <hr>
@@ -219,10 +209,10 @@
 </div>
                    
                 
-
                 <div class="mt-4 text-end">
-                    <button type="submit" class="btn btn-primary">Guardar Novedad</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>
+
             </form>
         </div>
     </div>
@@ -234,6 +224,8 @@ document.addEventListener('DOMContentLoaded', function(){
     const eps = document.getElementById('eps_section');
     const otro = document.getElementById('otro_section');
    const periodico = document.getElementById('periodico_section');
+    const tipoExamenSection = document.getElementById('tipo_examen_section');
+
 
     function updateVisibility(){
         const val = tipo.value;
@@ -241,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function(){
         eps.style.display = (val === 'solicitado_eps') ? 'block' : 'none';
         otro.style.display = (val === 'otro') ? 'block' : 'none';
         periodico.style.display = (val === 'periodico_ocupacional') ? 'block' : 'none';
+        tipoExamenSection.hidden = val !== '';
     }
 
     if(tipo){
