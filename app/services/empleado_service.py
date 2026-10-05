@@ -11,7 +11,7 @@ TIPOS_EXAMEN_MAP = {
     "3": "Egreso",
     "4": "Retorno laboral",
     "5": "Post-incapacidad",
-    "6": "Seguimiento",
+  
 }
 
 
@@ -88,18 +88,38 @@ class EmpleadoService:
     @staticmethod
     def crear(datos):
 
-        if EmpleadoService.buscar_por_cedula(datos.get("cedula")):
+        # Validar campos requeridos
+        cedula = datos.get("cedula", "").strip()
+        nombres = datos.get("nombres", "").strip()
+        apellidos = datos.get("apellidos", "").strip()
+
+        if not cedula:
+            raise ValueError("La cédula es requerida.")
+        
+        if not nombres:
+            raise ValueError("Los nombres son requeridos.")
+        
+        if not apellidos:
+            raise ValueError("Los apellidos son requeridos.")
+
+        if EmpleadoService.buscar_por_cedula(cedula):
             raise ValueError("La cédula ya se encuentra registrada.")
 
         empleado = Empleado(
             fecha_actualizacion=date.today(),
-            cedula=datos.get("cedula"),
-            nombres=datos.get("nombres"),
-            apellidos=datos.get("apellidos"),
+            cedula=cedula,
+            nombres=nombres,
+            apellidos=apellidos,
             fecha_nacimiento=EmpleadoService.convertir_fecha(
                 datos.get("fecha_nacimiento")
             ),
+            ciudad_nacimiento=datos.get("ciudad_nacimiento"),
+            ciudad_residencia=datos.get("ciudad_residencia"),
             sexo=datos.get("sexo"),
+            escolaridad=datos.get("escolaridad"),
+            estado_civil=datos.get("estado_civil"),
+            direccion=datos.get("direccion"),
+            arl=datos.get("arl"),
             telefono=datos.get("telefono"),
             correo=datos.get("correo"),
             fecha_ingreso=EmpleadoService.convertir_fecha(
@@ -108,7 +128,7 @@ class EmpleadoService:
             fecha_retiro=EmpleadoService.convertir_fecha(
                 datos.get("fecha_retiro")
             ),
-            estado=datos.get("estado"),
+            estado=datos.get("estado", "Activo"),
             origen_datos="Manual",
             id_eps=int(datos.get("id_eps")) if datos.get("id_eps") else None,
             id_afp=int(datos.get("id_afp")) if datos.get("id_afp") else None,
@@ -147,7 +167,13 @@ class EmpleadoService:
         if fecha_nacimiento:
             empleado.fecha_nacimiento = fecha_nacimiento
 
+        empleado.ciudad_nacimiento = datos.get("ciudad_nacimiento", empleado.ciudad_nacimiento)
+        empleado.ciudad_residencia = datos.get("ciudad_residencia", empleado.ciudad_residencia)
         empleado.sexo = datos.get("sexo", empleado.sexo)
+        empleado.escolaridad = datos.get("escolaridad", empleado.escolaridad)
+        empleado.estado_civil = datos.get("estado_civil", empleado.estado_civil)
+        empleado.direccion = datos.get("direccion", empleado.direccion)
+        empleado.arl = datos.get("arl", empleado.arl)
         empleado.telefono = datos.get("telefono", empleado.telefono)
         empleado.correo = datos.get("correo", empleado.correo)
 

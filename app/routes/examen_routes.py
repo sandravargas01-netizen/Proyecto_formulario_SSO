@@ -5,19 +5,22 @@ from flask import (
     redirect,
     url_for,
     send_from_directory,
-    send_file
+    send_file,
+    flash
 )
 import json
 import os
 from datetime import date
 from werkzeug.utils import secure_filename
-import os
 
 from app import db
 
 from app.models.transaccionales.examen import Examen
 from app.models.transaccionales.empleado import Empleado
+from app.models.maestros.eps import EPS
+from app.models.maestros.afp import AFP
 from app.services.pdf_service import PDFService
+from app.services.empleado_service import EmpleadoService
 
 
 examen_bp = Blueprint(
@@ -28,6 +31,7 @@ examen_bp = Blueprint(
 
 
 NOVEDAD_LABELS = {
+    "valoracion_ocupacional": "Valoración ocupacional",
     "periodico_ocupacional": "Examen periódico ocupacional",
     "pre_ingreso": "Examen de pre-ingreso",
     "ingreso": "Examen de ingreso",
@@ -36,6 +40,8 @@ NOVEDAD_LABELS = {
     "retorno_laboral": "Retorno laboral",
     "post_incapacidad": "Post incapacidad",
     "cambio_cargo": "Cambio de cargo",
+    "cambio_ocupacion": "Examen por cambio de ocupación",
+    "seguimiento": "Examen de seguimiento",
     "sistema_vigilancia": "Sistema de vigilancia epidemiológica",
     "valoracion_psicosocial": "Valoración de psicología ocupacional",
     "terapia_ocupacional": "Valoración de terapia ocupacional",
@@ -69,6 +75,8 @@ def _parse_novedad_metadata(observaciones):
 
     field_map = {
         "Tipo de examen": "tipo_novedad",
+        "Tipo de valoración": "tipo_valoracion",
+        "Tipos de examen": "tipos_novedad",
         "Estado novedad": "estado_novedad",
         "Riesgos": "riesgos",
         "Especialidad EPS": "especialidad_eps",
@@ -94,13 +102,37 @@ def _parse_novedad_metadata(observaciones):
             if riesgo.strip()
         ]
 
+    if metadata.get("tipos_novedad"):
+        metadata["tipos_novedad"] = [
+            tipo.strip()
+            for tipo in metadata["tipos_novedad"].split(",")
+            if tipo.strip()
+        ]
+
     tipo_novedad = metadata.get("tipo_novedad")
+
+    if not tipo_novedad and metadata.get("tipos_novedad"):
+        tipo_novedad = metadata["tipos_novedad"][0]
+        metadata["tipo_novedad"] = tipo_novedad
 
     if tipo_novedad:
         metadata["tipo_novedad_label"] = NOVEDAD_LABELS.get(
             tipo_novedad,
             tipo_novedad.replace("_", " ").title()
         )
+
+    tipo_valoracion = metadata.get("tipo_valoracion")
+    if tipo_valoracion:
+        metadata["tipo_valoracion_label"] = NOVEDAD_LABELS.get(
+            tipo_valoracion,
+            tipo_valoracion.replace("_", " ").title()
+        )
+
+    if metadata.get("tipos_novedad"):
+        metadata["tipos_novedad_labels"] = [
+            NOVEDAD_LABELS.get(tipo, tipo.replace("_", " ").title())
+            for tipo in metadata["tipos_novedad"]
+        ]
 
     return observacion_general.strip(), metadata
 
@@ -120,6 +152,188 @@ def _normalize_concepto_aptitud(value):
     return concept_map.get(value, value)
 
 
+def _procesar_formulario_examen(empleado):
+    """Procesa el formulario de examen/HCO y retorna los campos calculados
+    para construir o actualizar un registro ``Examen``. También actualiza los
+    datos personales del ``empleado`` recibido. Reutilizado por las rutas de
+    creación y edición de examenes para evitar duplicar la lógica."""
+
+    tipos_novedad = [
+        value.strip()
+        for value in request.form.getlist('tipo_novedad')
+        if value and value.strip()
+    ]
+
+    if not tipos_novedad:
+        tipo_unico = (request.form.get('tipo_novedad') or '').strip()
+        if tipo_unico:
+            tipos_novedad = [tipo_unico]
+
+    tipo_novedad = tipos_novedad[0] if tipos_novedad else None
+    tipo_examen = (request.form.get('tipo_examen') or '').strip()
+    tipo_valoracion = (request.form.get('tipo_valoracion') or '').strip()
+    fecha_novedad = request.form.get('fecha_novedad') or date.today().isoformat()
+    estado_novedad = request.form.get('estado_novedad') or 'pendiente'
+    riesgos = request.form.getlist('riesgo[]') or request.form.getlist('riesgo')
+    especialidad_eps = request.form.get('especialidad_eps')
+    observaciones_eps = request.form.get('observaciones_eps')
+    descripcion_otro = request.form.get('descripcion_otro')
+
+    # handle pdf upload
+    pdf_filename = None
+    upload = request.files.get('pdf_eps')
+    if upload and upload.filename:
+        filename = secure_filename(upload.filename)
+        uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+        os.makedirs(uploads_dir, exist_ok=True)
+        save_path = os.path.join(uploads_dir, filename)
+        upload.save(save_path)
+        pdf_filename = filename
+
+    # Consolidate extra fields into observaciones to avoid DB schema changes
+    extra = []
+    if tipo_novedad:
+        extra.append(f"Tipo de examen: {tipo_novedad}")
+    if tipo_examen:
+        extra.append(f"Tipo de examen: {tipo_examen}")
+    if tipo_valoracion:
+        extra.append(f"Tipo de valoración: {tipo_valoracion}")
+    if tipos_novedad:
+        extra.append(f"Tipos de examen: {','.join(tipos_novedad)}")
+    if estado_novedad:
+        extra.append(f"Estado novedad: {estado_novedad}")
+    if riesgos:
+        extra.append(f"Riesgos: {','.join(riesgos)}")
+    if especialidad_eps:
+        extra.append(f"Especialidad EPS: {especialidad_eps}")
+    if observaciones_eps:
+        extra.append(f"Observaciones EPS: {observaciones_eps}")
+    if descripcion_otro:
+        extra.append(f"Descripcion otro: {descripcion_otro}")
+    if pdf_filename:
+        extra.append(f"Archivo PDF EPS: {pdf_filename}")
+
+    def first_form_value(*keys):
+        for key in keys:
+            value = (request.form.get(key) or '').strip()
+            if value:
+                return value
+        return None
+
+    personal_data = {
+        "ciudad_nacimiento": first_form_value("hc_ciudad_nacimiento", "hco_med_ciudad_nacimiento"),
+        "ciudad_residencia": first_form_value("hc_ciudad_residencia", "hco_med_ciudad_residencia"),
+        "sexo": first_form_value("hc_sexo", "hco_med_sexo"),
+        "escolaridad": first_form_value("hc_escolaridad", "hco_med_escolaridad"),
+        "estado_civil": first_form_value("hc_estado_civil", "hco_med_estado_civil"),
+        "direccion": first_form_value("hc_direccion", "hco_med_direccion"),
+        "arl": first_form_value("hc_arl", "hco_med_arl"),
+        "telefono": first_form_value("hc_telefono_contacto", "hco_med_telefono"),
+    }
+    fecha_nacimiento = first_form_value("hc_fecha_nacimiento", "hco_med_fecha_nacimiento")
+    if fecha_nacimiento:
+        personal_data["fecha_nacimiento"] = EmpleadoService.convertir_fecha(fecha_nacimiento)
+
+    for attribute, value in personal_data.items():
+        if value:
+            setattr(empleado, attribute, value)
+
+    for form_key, model, attribute in (
+        ("eps", EPS, "id_eps"),
+        ("hc_eps", EPS, "id_eps"),
+        ("hco_med_eps", EPS, "id_eps"),
+        ("hc_afp", AFP, "id_afp"),
+        ("hco_med_afp", AFP, "id_afp"),
+    ):
+        value = (request.form.get(form_key) or '').strip()
+        if not value:
+            continue
+        catalogo = model.query.filter(db.func.lower(model.nombre) == value.lower()).first()
+        if catalogo:
+            setattr(empleado, attribute, catalogo.id_eps if model is EPS else catalogo.id_afp)
+
+    hco_data = {}
+    for key, values in request.form.to_dict(flat=False).items():
+        if not key.startswith("hco_"):
+            continue
+
+        cleaned_values = [value.strip() for value in values if value.strip()]
+        if not cleaned_values:
+            continue
+
+        hco_data[key] = cleaned_values if len(cleaned_values) > 1 else cleaned_values[0]
+
+    if hco_data:
+        extra.append(f"HCO_DATA: {json.dumps(hco_data, ensure_ascii=True)}")
+
+    base_observ = request.form.get('observaciones') or ''
+    combined_observ = base_observ
+    if extra:
+        combined_observ = combined_observ + "\n---\n" + "\n".join(extra)
+
+    return {
+        "tipo_examen": tipo_examen or tipo_novedad or 'NOVEDAD',
+        "fecha_examen": fecha_novedad or request.form.get('fecha_examen') or '',
+        "medico": request.form.get('medico') or request.form.get('medico_evaluador'),
+        "ips": request.form.get('ips') or request.form.get('ips_proveedora'),
+        "estado": request.form.get('estado') or estado_novedad,
+        "concepto_medico": request.form.get('concepto_medico'),
+        "fecha_nuevo_control": request.form.get('fecha_nuevo_control'),
+        "observaciones": combined_observ,
+        "concepto_de_aptitud": _normalize_concepto_aptitud(
+            request.form.get('concepto_de_aptitud') or request.form.get('concepto_medico')
+        ),
+        "restricciones_medicas": request.form.get('restricciones_medicas') or request.form.get('restricciones'),
+        "recomendaciones_medicas": request.form.get('recomendaciones_medicas') or request.form.get('recomendaciones'),
+        "requiere_seguimiento": request.form.get('requiere_seguimiento') == 'true',
+        "fecha_nuevo_seguimiento": request.form.get('fecha_nuevo_seguimiento'),
+        "profesional_encargado_seguimiento": request.form.get('profesional_encargado_seguimiento'),
+        "observaciones_seguimiento": request.form.get('observaciones_seguimiento'),
+        "post_incapacidad_medico": request.form.get('post_incapacidad_medico'),
+    }
+
+
+def _regenerar_pdf_examen(examen, empleado):
+    """Genera (o regenera) el PDF del examen y guarda la referencia del
+    archivo en ``observaciones``, reemplazando cualquier referencia previa."""
+
+    pdf_filename = f"examen_{empleado.cedula or empleado.id_empleado}_{examen.id}.pdf"
+    uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    pdf_path = os.path.join(uploads_dir, pdf_filename)
+    pdf_buffer = PDFService.generar_examen_pdf(examen, empleado)
+    pdf_buffer.seek(0)
+    with open(pdf_path, 'wb') as generated_pdf:
+        generated_pdf.write(pdf_buffer.read())
+
+    observaciones_sin_pdf = "\n".join(
+        line for line in (examen.observaciones or '').splitlines()
+        if not line.startswith("Archivo PDF Examen:")
+    )
+    examen.observaciones = observaciones_sin_pdf + f"\nArchivo PDF Examen: {pdf_filename}"
+
+
+def _eliminar_pdf_examen_de_disco(observaciones):
+    """Busca la referencia ``Archivo PDF Examen:`` en las observaciones y
+    elimina el archivo físico correspondiente, si existe."""
+
+    if not observaciones:
+        return
+
+    uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+    for line in observaciones.splitlines():
+        if line.startswith("Archivo PDF Examen:"):
+            filename = line.split(':', 1)[1].strip()
+            if not filename:
+                continue
+            file_path = os.path.join(uploads_dir, filename)
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass
+
+
 # ==========================================
 # LISTAR
 # ==========================================
@@ -136,42 +350,26 @@ def listar():
 
 
 # ==========================================
-# CREAR
+# CREAR (ruta independiente de empleado)
 # ==========================================
-
+# Todo examen pertenece obligatoriamente a un empleado (Examen.id_empleado es
+# NOT NULL), y el formulario "examenes/crear.html" solo funciona correctamente
+# cuando se conoce el empleado (datos personales, panelMap, etc.). Por lo tanto
+# esta ruta no crea el examen directamente: redirige al listado de empleados
+# para que el usuario elija el empleado y continúe en "crear_para_empleado".
 @examen_bp.route(
     "/crear",
     methods=["GET", "POST"]
 )
 def crear():
 
-    if request.method == "POST":
+    flash(
+        "Seleccione un empleado para registrar el examen ocupacional.",
+        "info"
+    )
 
-        examen = Examen(
-
-            tipo_examen=request.form["tipo_examen"],
-
-            fecha_examen=request.form["fecha_examen"],
-
-            medico=request.form.get("medico"),
-
-            ips=request.form.get("ips"),
-
-            concepto_medico=request.form.get("concepto_medico"),
-
-            observaciones=request.form.get("observaciones")
-        )
-
-        db.session.add(examen)
-
-        db.session.commit()
-
-        return redirect(
-            url_for("examen.listar")
-        )
-
-    return render_template(
-        "examenes/crear.html"
+    return redirect(
+        url_for("empleado.listar")
     )
 
 
@@ -190,11 +388,17 @@ def detalle(id):
         examen.observaciones
     )
 
-    tipo_novedad = novedad_metadata.get("tipo_novedad") or examen.tipo_examen
-    tipo_novedad_label = NOVEDAD_LABELS.get(
-        tipo_novedad,
-        tipo_novedad.replace("_", " ").title()
-    ) if tipo_novedad else "No registrado"
+    tipo_novedad_list = novedad_metadata.get("tipos_novedad") or []
+    if not tipo_novedad_list:
+        tipo_unico = novedad_metadata.get("tipo_novedad") or examen.tipo_examen
+        tipo_novedad_list = [tipo_unico] if tipo_unico else []
+
+    tipo_novedad = tipo_novedad_list[0] if tipo_novedad_list else None
+    tipo_novedad_labels = [
+        NOVEDAD_LABELS.get(tipo, tipo.replace("_", " ").title())
+        for tipo in tipo_novedad_list
+    ]
+    tipo_novedad_label = ", ".join(tipo_novedad_labels) if tipo_novedad_labels else "No registrado"
 
     return render_template(
         "examenes/detail.html",
@@ -203,6 +407,8 @@ def detalle(id):
         observaciones_generales=observaciones_generales,
         novedad_metadata=novedad_metadata,
         tipo_novedad=tipo_novedad,
+        tipo_novedad_list=tipo_novedad_list,
+        tipo_novedad_labels=tipo_novedad_labels,
         tipo_novedad_label=tipo_novedad_label
     )
 
@@ -222,93 +428,17 @@ def crear_para_empleado(empleado_id):
 
     if request.method == "POST":
 
-        # map form fields to model
-        tipo_novedad = request.form.get('tipo_novedad')
-        fecha_novedad = request.form.get('fecha_novedad') or date.today().isoformat()
-        estado_novedad = request.form.get('estado_novedad') or 'pendiente'
-        riesgos = request.form.getlist('riesgo[]') or request.form.getlist('riesgo')
-        especialidad_eps = request.form.get('especialidad_eps')
-        observaciones_eps = request.form.get('observaciones_eps')
-        descripcion_otro = request.form.get('descripcion_otro')
-
-        # handle pdf upload
-        pdf_filename = None
-        upload = request.files.get('pdf_eps')
-        if upload and upload.filename:
-            filename = secure_filename(upload.filename)
-            uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
-            os.makedirs(uploads_dir, exist_ok=True)
-            save_path = os.path.join(uploads_dir, filename)
-            upload.save(save_path)
-            pdf_filename = filename
-
-        # Consolidate extra fields into observaciones to avoid DB schema changes
-        extra = []
-        if tipo_novedad:
-            extra.append(f"Tipo de examen: {tipo_novedad}")
-        if estado_novedad:
-            extra.append(f"Estado novedad: {estado_novedad}")
-        if riesgos:
-            extra.append(f"Riesgos: {','.join(riesgos)}")
-        if especialidad_eps:
-            extra.append(f"Especialidad EPS: {especialidad_eps}")
-        if observaciones_eps:
-            extra.append(f"Observaciones EPS: {observaciones_eps}")
-        if descripcion_otro:
-            extra.append(f"Descripcion otro: {descripcion_otro}")
-        if pdf_filename:
-            extra.append(f"Archivo PDF EPS: {pdf_filename}")
-
-        hco_data = {}
-        for key, values in request.form.to_dict(flat=False).items():
-            if not key.startswith("hco_"):
-                continue
-
-            cleaned_values = [value.strip() for value in values if value.strip()]
-            if not cleaned_values:
-                continue
-
-            hco_data[key] = cleaned_values if len(cleaned_values) > 1 else cleaned_values[0]
-
-        if hco_data:
-            extra.append(f"HCO_DATA: {json.dumps(hco_data, ensure_ascii=True)}")
-
-        base_observ = request.form.get('observaciones') or ''
-        combined_observ = base_observ
-        if extra:
-            combined_observ = combined_observ + "\n---\n" + "\n".join(extra)
+        campos = _procesar_formulario_examen(empleado)
 
         examen = Examen(
-            tipo_examen=tipo_novedad or request.form.get('tipo_examen') or 'NOVEDAD',
-            fecha_examen=fecha_novedad or request.form.get('fecha_examen') or '',
-            medico=request.form.get('medico') or request.form.get('medico_evaluador'),
-            ips=request.form.get('ips') or request.form.get('ips_proveedora'),
-            estado=request.form.get('estado') or estado_novedad,
-            concepto_medico=request.form.get('concepto_medico'),
-            fecha_nuevo_control=request.form.get('fecha_nuevo_control'),
-            observaciones=combined_observ,
-            concepto_de_aptitud=_normalize_concepto_aptitud(
-                request.form.get('concepto_de_aptitud') or request.form.get('concepto_medico')
-            ),
-            restricciones_medicas=request.form.get('restricciones_medicas') or request.form.get('restricciones'),
-            recomendaciones_medicas=request.form.get('recomendaciones_medicas') or request.form.get('recomendaciones'),
-            id_empleado=empleado.id_empleado
+            id_empleado=empleado.id_empleado,
+            **campos
         )
 
         db.session.add(examen)
-
         db.session.commit()
 
-        pdf_filename = f"examen_{empleado.cedula or empleado.id_empleado}_{examen.id}.pdf"
-        uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
-        os.makedirs(uploads_dir, exist_ok=True)
-        pdf_path = os.path.join(uploads_dir, pdf_filename)
-        pdf_buffer = PDFService.generar_examen_pdf(examen, empleado)
-        pdf_buffer.seek(0)
-        with open(pdf_path, 'wb') as generated_pdf:
-            generated_pdf.write(pdf_buffer.read())
-
-        examen.observaciones = (examen.observaciones or '') + f"\nArchivo PDF Examen: {pdf_filename}"
+        _regenerar_pdf_examen(examen, empleado)
         db.session.commit()
 
         return redirect(
@@ -319,6 +449,140 @@ def crear_para_empleado(empleado_id):
         "examenes/crear.html",
         empleado=empleado
     )
+
+
+@examen_bp.route(
+    "/<int:id>/editar",
+    methods=["GET", "POST"]
+)
+def editar(id):
+
+    examen = Examen.query.get(id)
+
+    if not examen:
+        flash("El examen no existe o ya fue eliminado.", "warning")
+        return redirect(url_for("examen.listar"))
+
+    empleado = Empleado.query.get(examen.id_empleado)
+
+    if not empleado:
+        return redirect(url_for("examen.listar"))
+
+    if request.method == "POST":
+
+        campos = _procesar_formulario_examen(empleado)
+
+        for attribute, value in campos.items():
+            setattr(examen, attribute, value)
+
+        db.session.commit()
+
+        _regenerar_pdf_examen(examen, empleado)
+        db.session.commit()
+
+        flash("Examen actualizado correctamente.", "success")
+
+        return redirect(
+            url_for("examen.detalle", id=examen.id)
+        )
+
+    observacion_general, metadata = _parse_novedad_metadata(examen.observaciones)
+    hco_data_existente = metadata.get("hco_data", {})
+
+    datos_basicos = {
+        "tipo_examen": examen.tipo_examen,
+        "tipo_novedad": metadata.get("tipo_novedad"),
+        "tipo_valoracion": metadata.get("tipo_valoracion"),
+        "estado_novedad": metadata.get("estado_novedad"),
+        "medico": examen.medico,
+        "medico_evaluador": examen.medico,
+        "ips": examen.ips,
+        "ips_proveedora": examen.ips,
+        "estado": examen.estado,
+        "concepto_medico": examen.concepto_medico,
+        "fecha_nuevo_control": examen.fecha_nuevo_control,
+        "concepto_de_aptitud": examen.concepto_de_aptitud,
+        "restricciones_medicas": examen.restricciones_medicas,
+        "restricciones": examen.restricciones_medicas,
+        "recomendaciones_medicas": examen.recomendaciones_medicas,
+        "recomendaciones": examen.recomendaciones_medicas,
+        "observaciones": observacion_general,
+        "fecha_novedad": examen.fecha_examen,
+        "fecha_examen": examen.fecha_examen,
+        "especialidad_eps": metadata.get("especialidad_eps"),
+        "observaciones_eps": metadata.get("observaciones_eps"),
+        "descripcion_otro": metadata.get("descripcion_otro"),
+    }
+
+    datos_prefill = dict(hco_data_existente)
+    datos_prefill.update({
+        key: value for key, value in datos_basicos.items()
+        if value not in (None, '')
+    })
+    if metadata.get("riesgos"):
+        datos_prefill["riesgo[]"] = metadata["riesgos"]
+
+    return render_template(
+        "examenes/crear.html",
+        empleado=empleado,
+        examen=examen,
+        is_edit=True,
+        prefill_json=json.dumps(datos_prefill, ensure_ascii=True)
+    )
+
+
+@examen_bp.route(
+    "/<int:id>/eliminar-pdf",
+    methods=["POST"]
+)
+def eliminar_pdf(id):
+
+    examen = Examen.query.get(id)
+
+    if not examen:
+        flash("El examen no existe o ya fue eliminado.", "warning")
+        return redirect(url_for("examen.listar"))
+
+    _eliminar_pdf_examen_de_disco(examen.observaciones)
+
+    examen.observaciones = "\n".join(
+        line for line in (examen.observaciones or '').splitlines()
+        if not line.startswith("Archivo PDF Examen:")
+    )
+    db.session.commit()
+
+    flash("El PDF del examen fue eliminado. Puede generarlo nuevamente desde 'Descargar PDF'.", "success")
+
+    return redirect(url_for("examen.detalle", id=examen.id))
+
+
+@examen_bp.route(
+    "/<int:id>/eliminar",
+    methods=["POST"]
+)
+def eliminar(id):
+
+    examen = Examen.query.get(id)
+
+    if not examen:
+        flash("El examen no existe o ya fue eliminado.", "warning")
+        return redirect(url_for("examen.listar"))
+
+    empleado_id = examen.id_empleado
+
+    _eliminar_pdf_examen_de_disco(examen.observaciones)
+
+    db.session.delete(examen)
+    db.session.commit()
+
+    flash("Examen eliminado correctamente.", "success")
+
+    if empleado_id:
+        return redirect(
+            url_for("empleado.consulta_integral", id=empleado_id, _anchor="examenes-ocupacionales")
+        )
+
+    return redirect(url_for("examen.listar"))
 
 
 @examen_bp.route('/<int:id>/descargar-pdf')

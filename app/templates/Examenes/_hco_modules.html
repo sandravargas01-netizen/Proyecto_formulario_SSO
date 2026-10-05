@@ -1,59 +1,508 @@
 {% macro personal_block() %}
-<div class="hco-personal-section">
-    <div class="card border-primary mb-3">
-        <div class="card-header bg-primary text-white">Datos personales del trabajador</div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4"><label class="form-label">Nombre completo</label><input type="text" name="hco_personal_nombre" class="form-control" value="{% if empleado %}{{ empleado.nombres }} {{ empleado.apellidos }}{% endif %}" readonly></div>
-                <div class="col-md-2"><label class="form-label">Tipo de documento</label><select name="hco_personal_tipo_documento" class="form-select"><option value="">--</option><option>CC</option><option>CE</option><option>PA</option><option>PEP</option><option>TI</option></select></div>
-                <div class="col-md-3"><label class="form-label">Numero de documento</label><input type="text" name="hco_personal_documento" class="form-control" value="{% if empleado %}{{ empleado.cedula }}{% endif %}" readonly></div>
-                <div class="col-md-3"><label class="form-label">Fecha de nacimiento</label><input type="date" name="hco_personal_fecha_nacimiento" class="form-control" value="{% if empleado and empleado.fecha_nacimiento %}{{ empleado.fecha_nacimiento.strftime('%Y-%m-%d') }}{% endif %}"></div>
-                <div class="col-md-2"><label class="form-label">Edad</label><input type="number" name="hco_personal_edad" min="15" max="100" class="form-control"></div>
-                <div class="col-md-2"><label class="form-label">Sexo biologico</label><select name="hco_personal_sexo" class="form-select"><option value="">--</option><option>Femenino</option><option>Masculino</option></select></div>
-                <div class="col-md-4"><label class="form-label">Empresa</label><input type="text" name="hco_personal_empresa" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Cargo</label><input type="text" name="hco_personal_cargo" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">EPS / ARL</label><input type="text" name="hco_personal_eps_arl" class="form-control"></div>
+
+{% endmacro %}
+
+{% macro system_result(name, label, default='NORMAL') %}
+<div class="col-md-4"><label class="form-label">{{ label }}</label><select name="hco_med_sistema_{{ name }}" class="form-select"><option value="">-- Seleccione --</option><option {% if default == 'NORMAL' %}selected{% endif %}>NORMAL</option><option>ANORMAL</option><option {% if default == 'NO SE EVALÚA' %}selected{% endif %}>NO SE EVALÚA</option></select></div>
+{% endmacro %}
+
+{% macro yes_no(name, label, default='NO') %}
+<div class="col-md-3"><label class="form-label">{{ label }}</label><select name="hco_med_sistema_{{ name }}" class="form-select"><option value="">-- Seleccione --</option><option {% if default == 'SI' %}selected{% endif %}>SI</option><option {% if default == 'NO' %}selected{% endif %}>NO</option></select></div>
+{% endmacro %}
+
+{% macro company_risk_matrix(prefix, title) %}
+<div class="col-12 mt-2"><label class="form-label fw-semibold mb-1">{{ title }}</label></div>
+
+<div class="col-12 border rounded p-2">
+    <div class="small fw-semibold mb-2">Físicos</div>
+    <div class="row g-2">
+        {% for value, label in [('iluminacion','Iluminación'), ('radiaciones','Radiaciones'), ('ruido','Ruido'), ('temp_alta','Temp. alta'), ('temp_baja','Temp. baja'), ('vibracion','Vibración')] %}
+        <div class="col-6 col-md-2">
+            <div class="d-flex align-items-center justify-content-between">
+                <label class="form-check-label small fw-semibold text-nowrap" for="{{ 'hco_' ~ prefix ~ '_fis_' ~ value }}">{{ label }}</label>
+                <input class="form-check-input mt-0 ms-1" type="checkbox" name="{{ 'hco_' ~ prefix ~ '_riesgo_fisico' }}" value="{{ value }}" id="{{ 'hco_' ~ prefix ~ '_fis_' ~ value }}">
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+                <label class="form-check-label small" for="{{ 'hco_' ~ prefix ~ '_fis_epp_' ~ value }}">EPP</label>
+                <input class="form-check-input mt-0 ms-1" type="checkbox" name="{{ 'hco_' ~ prefix ~ '_epp_fisico' }}" value="{{ value }}" id="{{ 'hco_' ~ prefix ~ '_fis_epp_' ~ value }}">
             </div>
         </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="col-12 border rounded p-2">
+    <div class="small fw-semibold mb-2">Químicos</div>
+    <div class="row g-2">
+        {% for value, label in [('gases','Gases'), ('humos','Humos'), ('polvos','Polvos'), ('liquidos','Líquidos'), ('vapores','Vapores'), ('fibras','Fibras')] %}
+        <div class="col-6 col-md-2">
+            <div class="d-flex align-items-center justify-content-between">
+                <label class="form-check-label small fw-semibold text-nowrap" for="{{ 'hco_' ~ prefix ~ '_quim_' ~ value }}">{{ label }}</label>
+                <input class="form-check-input mt-0 ms-1" type="checkbox" name="{{ 'hco_' ~ prefix ~ '_riesgo_quimico' }}" value="{{ value }}" id="{{ 'hco_' ~ prefix ~ '_quim_' ~ value }}">
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+                <label class="form-check-label small" for="{{ 'hco_' ~ prefix ~ '_quim_epp_' ~ value }}">EPP</label>
+                <input class="form-check-input mt-0 ms-1" type="checkbox" name="{{ 'hco_' ~ prefix ~ '_epp_quimico' }}" value="{{ value }}" id="{{ 'hco_' ~ prefix ~ '_quim_epp_' ~ value }}">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="col-12 border rounded p-2">
+    <div class="small fw-semibold mb-2">Ergonómicos</div>
+    <div class="row g-2">
+        {% for value, label in [('carga_dinamica','Carga dinámica'), ('carga_estatica','Carga estática'), ('diseno_puesto','Diseño de puesto'), ('manejo_cargas','Manejo de cargas'), ('mov_repetitivos','Movimientos repetitivos')] %}
+        <div class="col-6 col-md-4">
+            <div class="d-flex align-items-center gap-1">
+                <label class="form-check-label small fw-semibold text-nowrap" for="{{ 'hco_' ~ prefix ~ '_ergo_' ~ value }}">{{ label }}</label>
+                <input class="form-check-input mt-0" type="checkbox" name="{{ 'hco_' ~ prefix ~ '_riesgo_ergonomico' }}" value="{{ value }}" id="{{ 'hco_' ~ prefix ~ '_ergo_' ~ value }}">
+            </div>
+            <div class="d-flex align-items-center gap-1">
+                <label class="form-check-label small" for="{{ 'hco_' ~ prefix ~ '_ergo_epp_' ~ value }}">EPP</label>
+                <input class="form-check-input mt-0" type="checkbox" name="{{ 'hco_' ~ prefix ~ '_epp_ergonomico' }}" value="{{ value }}" id="{{ 'hco_' ~ prefix ~ '_ergo_epp_' ~ value }}">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="col-12 border rounded p-2">
+    <div class="small fw-semibold mb-2">Otros</div>
+    <div class="row g-2">
+        {% for value, label in [('altura','Trabajo en alturas'), ('mecanico','Mecánico'), ('electrico','Eléctrico'), ('locativo','Locativo'), ('biologico','Biológico'), ('seguridad','Seguridad'), ('psicosocial','Psicosocial'), ('espacios_confinados','Trabajo en espacios confinados')] %}
+        <div class="col-6 col-md-auto">
+            <div class="d-flex align-items-center justify-content-between">
+                <label class="form-check-label small fw-semibold text-nowrap" for="{{ 'hco_' ~ prefix ~ '_otros_' ~ value }}">{{ label }}</label>
+                <input class="form-check-input mt-0 ms-1" type="checkbox" name="{{ 'hco_' ~ prefix ~ '_riesgo_otros' }}" value="{{ value }}" id="{{ 'hco_' ~ prefix ~ '_otros_' ~ value }}">
+            </div>
+            {% if value != 'psicosocial' %}
+                <div class="d-flex align-items-center justify-content-between">
+                    <label class="form-check-label small" for="{{ 'hco_' ~ prefix ~ '_otros_epp_' ~ value }}">EPP</label>
+                    <input class="form-check-input mt-0 ms-1" type="checkbox" name="{{ 'hco_' ~ prefix ~ '_epp_otros' }}" value="{{ value }}" id="{{ 'hco_' ~ prefix ~ '_otros_epp_' ~ value }}">
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endmacro %}
 
-<div class="col-12" id="hco_exam_name" style="display:none;">
-    <h4 class="text-primary mb-3"></h4>
-</div>
-
 <div class="col-12 hco-panel" data-hco-module="med">
     {{ personal_block() }}
     <div class="card border-primary">
-        <div class="card-header bg-primary text-white">Valoracion medica ocupacional</div>
+        <div class="card-header bg-primary text-white">Valoración ocupacional</div>
         <div class="card-body">
             <div class="row g-3">
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">1. Información General</h6></div>
+                <div class="col-md-3"><label class="form-label">Fecha de examen</label><input type="date" name="fecha_examen" class="form-control"></div>
                 <div class="col-md-3"><label class="form-label">Hora</label><input type="time" name="hco_med_hora" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Ciudad del examen</label><select name="hco_med_ciudad" class="form-select"><option value="">-- Seleccione --</option><option>Leticia</option><option>Medellín</option><option>Arauca</option><option>Barranquilla</option><option>Cartagena</option><option>Tunja</option><option>Manizales</option><option>Florencia</option><option>Yopal</option><option>Popayán</option><option>Valledupar</option><option>Quibdó</option><option>Montería</option><option>Bogotá D.C.</option><option>Puerto Carreño</option><option>Inírida</option><option>San José del Guaviare</option><option>Neiva</option><option>Riohacha</option><option>Santa Marta</option><option>Villavicencio</option><option>Pasto</option><option>Cúcuta</option><option>Mocoa</option><option>Armenia</option><option>Pereira</option><option>San Andrés</option><option>Bucaramanga</option><option>Sincelejo</option><option>Ibagué</option><option>Cali</option><option>Mitú</option></select></div>
                 <div class="col-md-3"><label class="form-label">Departamento</label><select name="hco_med_departamento" class="form-select"><option value="">-- Seleccione --</option><option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option><option>Caquetá</option><option>Casanare</option><option>Cauca</option><option>Cesar</option><option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option><option>Bogotá D.C.</option><option>Guainía</option><option>Guaviare</option><option>Huila</option><option>La Guajira</option><option>Magdalena</option><option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option><option>Quindío</option><option>Risaralda</option><option>San Andrés y Providencia</option><option>Santander</option><option>Sucre</option><option>Tolima</option><option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option></select></div>
-                <div class="col-md-3"><label class="form-label">Ciudad</label><select name="hco_med_ciudad" class="form-select"><option value="">-- Seleccione --</option><option>Leticia</option><option>Medellín</option><option>Arauca</option><option>Barranquilla</option><option>Cartagena</option><option>Tunja</option><option>Manizales</option><option>Florencia</option><option>Yopal</option><option>Popayán</option><option>Valledupar</option><option>Quibdó</option><option>Montería</option><option>Bogotá D.C.</option><option>Puerto Carreño</option><option>Inírida</option><option>San José del Guaviare</option><option>Neiva</option><option>Riohacha</option><option>Santa Marta</option><option>Villavicencio</option><option>Pasto</option><option>Cúcuta</option><option>Mocoa</option><option>Armenia</option><option>Pereira</option><option>San Andrés</option><option>Bucaramanga</option><option>Sincelejo</option><option>Ibagué</option><option>Cali</option><option>Mitú</option></select></div>
-                <div class="col-md-3"><label class="form-label">Tarjeta profesional</label><input type="text" name="hco_med_tarjeta" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">Clase de riesgo</label><select name="hco_med_riesgo" class="form-select"><option value="">--</option><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option></select></div>
+                <div class="col-md-3"><label class="form-label">Escolaridad</label><select name="hco_med_escolaridad" class="form-select"><option value="">-- Seleccione --</option><option>Bachiller</option><option>Técnico</option><option>Tecnólogo</option><option>Profesional</option><option>Especialización</option><option>Maestría</option><option>Doctorado</option></select></div>
+                <div class="col-md-3"><label class="form-label">Estado civil</label><select name="hco_med_estado_civil" class="form-select"><option value="">-- Seleccione --</option><option>Soltero(a)</option><option>Casado(a)</option><option>Unión libre</option><option>Separado(a)</option><option>Divorciado(a)</option><option>Viudo(a)</option></select></div>
+                <div class="col-md-3"><label class="form-label">Sexo</label><select name="hco_med_sexo" class="form-select"><option value="">-- Seleccione --</option><option value="M" {% if empleado and empleado.sexo == 'M' %}selected{% endif %}>Masculino</option><option value="F" {% if empleado and empleado.sexo == 'F' %}selected{% endif %}>Femenino</option></select></div>
+                <div class="col-md-3"><label class="form-label">Fecha de nacimiento</label><input type="date" name="hco_med_fecha_nacimiento" class="form-control" value="{{ empleado.fecha_nacimiento.strftime('%Y-%m-%d') if empleado and empleado.fecha_nacimiento else '' }}"></div>
+                <div class="col-md-3"><label class="form-label">Ciudad de nacimiento</label><select name="hco_med_ciudad_nacimiento" class="form-select"><option value="">-- Seleccione --</option>{% for ciudad in ['Bogotá D.C.', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Ibagué', 'Villavicencio', 'Manizales', 'Pasto', 'Neiva', 'Montería', 'Armenia', 'Sincelejo', 'Valledupar', 'Popayán', 'Tunja', 'Riohacha', 'Quibdó', 'Florencia', 'Mocoa', 'Yopal', 'Leticia', 'Arauca', 'Puerto Carreño', 'Inírida', 'San José del Guaviare', 'Mitú', 'San Andrés'] %}<option value="{{ ciudad }}" {% if empleado and empleado.ciudad_nacimiento == ciudad %}selected{% endif %}>{{ ciudad }}</option>{% endfor %}</select></div>
+                <div class="col-md-3"><label class="form-label">Ciudad de residencia</label><select name="hco_med_ciudad_residencia" class="form-select"><option value="">-- Seleccione --</option>{% for ciudad in ['Bogotá D.C.', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Ibagué', 'Villavicencio', 'Manizales', 'Pasto', 'Neiva', 'Montería', 'Armenia', 'Sincelejo', 'Valledupar', 'Popayán', 'Tunja', 'Riohacha', 'Quibdó', 'Florencia', 'Mocoa', 'Yopal', 'Leticia', 'Arauca', 'Puerto Carreño', 'Inírida', 'San José del Guaviare', 'Mitú', 'San Andrés'] %}<option value="{{ ciudad }}" {% if empleado and empleado.ciudad_residencia == ciudad %}selected{% endif %}>{{ ciudad }}</option>{% endfor %}</select></div>
+                <div class="col-md-3"><label class="form-label">Teléfono</label><input type="text" name="hco_med_telefono" class="form-control" value="{{ empleado.telefono if empleado else '' }}"></div>
+                <div class="col-md-5"><label class="form-label">Dirección</label><input type="text" name="hco_med_direccion" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">EPS</label><input type="text" name="hco_med_eps" class="form-control" value="{{ empleado.eps.nombre if empleado and empleado.eps else '' }}"></div>
+                <div class="col-md-4"><label class="form-label">ARL</label><input type="text" name="hco_med_arl" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">AFP</label><input type="text" name="hco_med_afp" class="form-control" value="{{ empleado.afp.nombre if empleado and empleado.afp else '' }}"></div>
+                <div class="col-md-4"><label class="form-label">Médico evaluador</label><input type="text" name="post_incapacidad_medico" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">Clase de riesgo</label><select name="hco_med_riesgo" class="form-select"><option value="">--</option><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option></select></div>
+
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1 mt-2">Datos contractuales</h6></div>
+                <div class="col-md-3"><label class="form-label">Cargo Actual</label><input type="text" name="hco_med_cargo_actual" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Espacio asignado</label><input type="text" name="hco_med_espacio_asignado" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Dependencia</label><input type="text" name="hco_med_dependencia" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Estamento</label><input type="text" name="hco_med_estamento" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Profesión</label><input type="text" name="hco_med_profesion" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Tiempo en el cargo actual</label><div class="input-group"><input type="number" min="0" name="hco_med_tiempo_cargo_actual_anios" class="form-control" placeholder="Años"><input type="number" min="0" max="11" name="hco_med_tiempo_cargo_actual_meses" class="form-control" placeholder="Meses"></div></div>
+                <div class="col-md-3"><label class="form-label">Fecha de Ingreso Univalle</label><input type="date" name="hco_med_fecha_ingreso_univalle" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Jefe Inmediato</label><input type="text" name="hco_med_jefe_inmediato" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Cargos Ocupados</label><textarea name="hco_med_cargos_ocupados" rows="2" class="form-control"></textarea></div>
+                <div class="col-md-3"><label class="form-label">Cargo</label><input type="text" name="hco_med_jefe_cargo" class="form-control" placeholder="Cargo del jefe inmediato"></div>
+                <div class="col-md-3"><label class="form-label">Correo electrónico del Jefe</label><input type="email" name="hco_med_jefe_correo" class="form-control" placeholder="usuario@dominio.com" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" title="Ingrese un correo electrónico válido (ejemplo: usuario@dominio.com)"></div>
+
+                <div class="col-12"><hr class="my-2"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">2. Motivo de Consulta y Enfermedad Actual</h6></div>
+                <div class="col-md-6"><label class="form-label">Motivo de consulta</label><textarea name="hco_med_motivo_consulta" rows="2" class="form-control"></textarea></div>
+                <div class="col-md-6"><label class="form-label">Enfermedad actual</label><textarea name="hco_med_enfermedad_actual" rows="2" class="form-control"></textarea></div>
+
+                <div class="col-12"><hr class="my-2"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">3. Antecedentes Ocupacionales</h6></div>
+
+                <div class="col-12 border rounded p-2">
+                    <div class="row g-2">
+                        <div class="col-12"><strong>Empresa 1</strong></div>
+                        <div class="col-md-4"><label class="form-label">Empresa</label><input type="text" name="hco_occ1_empresa" class="form-control" value="UNIVERSIDAD DEL VALLE"></div>
+                        <div class="col-md-4"><label class="form-label">Empresa en misión</label><input type="text" name="hco_occ1_mision" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Cargo desempeñado</label><input type="text" name="hco_occ1_cargo" class="form-control" value="SECRETARIA"></div>
+                        <div class="col-md-4"><label class="form-label">Tiempo de exposición</label><div class="input-group"><input type="number" min="0" name="hco_occ1_tiempo_anios" class="form-control" placeholder="Años" value="4"><span class="input-group-text">a.</span><input type="number" min="0" max="11" name="hco_occ1_tiempo_meses" class="form-control" placeholder="Meses" value="0"><span class="input-group-text">m.</span></div></div>
+                        <div class="col-md-4"><label class="form-label">Actividad económica</label><input type="text" name="hco_occ1_actividad_economica" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Mediciones ambientales</label><input type="text" name="hco_occ1_mediciones" class="form-control" value="No aplica"></div>
+                        <div class="col-md-12"><label class="form-label">Descripción de funciones</label><textarea name="hco_occ1_funciones" rows="2" class="form-control">RECIBIR CORRESPONDENCIA, ALIMENTAR BASES DE DATOS, ATENCION A USUARIOS, REDACCION DE CARTAS, DIGITAR</textarea></div>
+
+                        {{ company_risk_matrix('occ1', 'Riesgos - Empresa 1') }}
+                    </div>
+                </div>
+
+                <div class="col-12 border rounded p-2">
+                    <div class="row g-2">
+                        <div class="col-12"><strong>Empresa 2</strong></div>
+                        <div class="col-md-4"><label class="form-label">Empresa</label><input type="text" name="hco_occ2_empresa" class="form-control" value="PESCADERIA GURMET"></div>
+                        <div class="col-md-4"><label class="form-label">Empresa en misión</label><input type="text" name="hco_occ2_mision" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Cargo desempeñado</label><input type="text" name="hco_occ2_cargo" class="form-control" value="VENDEDORA"></div>
+                        <div class="col-md-4"><label class="form-label">Tiempo de exposición</label><div class="input-group"><input type="number" min="0" name="hco_occ2_tiempo_anios" class="form-control" placeholder="Años" value="0"><span class="input-group-text">a.</span><input type="number" min="0" max="11" name="hco_occ2_tiempo_meses" class="form-control" placeholder="Meses" value="8"><span class="input-group-text">m.</span></div></div>
+                        <div class="col-md-4"><label class="form-label">Actividad económica</label><input type="text" name="hco_occ2_actividad_economica" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Mediciones ambientales</label><input type="text" name="hco_occ2_mediciones" class="form-control"></div>
+                        <div class="col-md-12"><label class="form-label">Descripción de funciones</label><textarea name="hco_occ2_funciones" rows="2" class="form-control">ATENCION A CLIENTES VENTAS</textarea></div>
+
+                        {{ company_risk_matrix('occ2', 'Riesgos - Empresa 2') }}
+                    </div>
+                </div>
+
+                <div class="col-12 border rounded p-2">
+                    <div class="row g-2">
+                        <div class="col-12"><strong>Empresa 3</strong></div>
+                        <div class="col-md-4"><label class="form-label">Empresa</label><input type="text" name="hco_occ3_empresa" class="form-control" value="FUNDACION CAICEDO GONZALEZ"></div>
+                        <div class="col-md-4"><label class="form-label">Empresa en misión</label><input type="text" name="hco_occ3_mision" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Cargo desempeñado</label><input type="text" name="hco_occ3_cargo" class="form-control" value="PRACTICANTE"></div>
+                        <div class="col-md-4"><label class="form-label">Tiempo de exposición</label><div class="input-group"><input type="number" min="0" name="hco_occ3_tiempo_anios" class="form-control" placeholder="Años" value="0"><span class="input-group-text">a.</span><input type="number" min="0" max="11" name="hco_occ3_tiempo_meses" class="form-control" placeholder="Meses" value="6"><span class="input-group-text">m.</span></div></div>
+                        <div class="col-md-4"><label class="form-label">Actividad económica</label><input type="text" name="hco_occ3_actividad_economica" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Mediciones ambientales</label><input type="text" name="hco_occ3_mediciones" class="form-control"></div>
+                        <div class="col-md-12"><label class="form-label">Descripción de funciones</label><textarea name="hco_occ3_funciones" rows="2" class="form-control">APOYO LOGISTICO</textarea></div>
+
+                        {{ company_risk_matrix('occ3', 'Riesgos - Empresa 3') }}
+                    </div>
+                </div>
+
+                <div class="col-12"><hr class="my-2"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">4. Antecedentes</h6></div>
+                <div class="col-12"><h6 class="fw-bold text-primary text-uppercase mb-1">Antecedentes de enfermedades laborales - Accidentes laborales</h6></div>
+                {% for index in range(1, 4) %}
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Antecedentes #{{ index }}</legend>
+                    <div class="row g-2">
+                        <div class="col-md-4"><label class="form-label">Empresa</label><input type="text" name="hco_med_ant{{ index }}_empresa" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Fecha</label><input type="date" name="hco_med_ant{{ index }}_fecha" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">ARL</label><input type="text" name="hco_med_ant{{ index }}_arl" class="form-control"></div>
+                        <div class="col-md-2"><label class="form-label">Incapacidad</label><select name="hco_med_ant{{ index }}_incapacidad" class="form-select"><option value="">--</option><option>Si</option><option>No</option></select></div>
+                        <div class="col-md-2"><label class="form-label">N° días</label><input type="number" min="0" name="hco_med_ant{{ index }}_dias" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Tipo de lesión - Órgano</label><input type="text" name="hco_med_ant{{ index }}_lesion_organo" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Tipo de accidente</label><input type="text" name="hco_med_ant{{ index }}_tipo_accidente" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Secuelas</label><input type="text" name="hco_med_ant{{ index }}_secuelas" class="form-control"></div>
+                        <div class="col-md-8"><label class="form-label">Observaciones de secuelas</label><input type="text" name="hco_med_ant{{ index }}_obs_secuelas" class="form-control"></div>
+                    </div>
+                </fieldset>
+                {% endfor %}
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold text-uppercase">Antecedentes familiares</legend>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Pulmonares</label><div class="col-6"><input type="text" name="hco_med_familiar_pulmonares" class="form-control form-control-sm"></div></div>
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Hipertensión</label><div class="col-6"><input type="text" name="hco_med_familiar_hipertension" class="form-control form-control-sm"></div></div>
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Convulsiones</label><div class="col-6"><input type="text" name="hco_med_familiar_convulsiones" class="form-control form-control-sm"></div></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Dislipidemias</label><div class="col-6"><input type="text" name="hco_med_familiar_dislipidemias" class="form-control form-control-sm"></div></div>
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Cardíacos</label><div class="col-6"><input type="text" name="hco_med_familiar_cardiacos" class="form-control form-control-sm"></div></div>
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Renales</label><div class="col-6"><input type="text" name="hco_med_familiar_renales" class="form-control form-control-sm"></div></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Diabetes</label><div class="col-6"><input type="text" name="hco_med_familiar_diabetes" class="form-control form-control-sm"></div></div>
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Cerebrovasculares</label><div class="col-6"><input type="text" name="hco_med_familiar_cerebrovasculares" class="form-control form-control-sm"></div></div>
+                            <div class="row g-1 align-items-center"><label class="col-6 form-label mb-0">Cáncer</label><div class="col-6"><input type="text" name="hco_med_familiar_cancer" class="form-control form-control-sm"></div></div>
+                        </div>
+                        <div class="col-12"><label class="form-label">Observaciones</label><textarea name="hco_med_antecedentes_familiares" rows="2" class="form-control"></textarea></div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold text-uppercase">Antecedentes personales</legend>
+                    <div class="row g-2">
+                        {% for column in [
+                            [('infecciosos','Infecciosos'), ('otorrino','Otorrinolaringológicos'), ('cardiovascular','Cardiovascular'), ('genitourinario','Genitourinario'), ('hematologico','Hematológico'), ('piel_anexos','Piel y anexos'), ('traumatico','Traumático'), ('osteomuscular','Osteomuscular'), ('neurologico','Neurológico'), ('otros','Otro')],
+                            [('oftalmologico','Oftalmológicos'), ('pulmonar','Pulmonar'), ('gastrointestinal','Gastrointestinal'), ('endocrino','Endocrinológico'), ('alergico','Alérgico'), ('quirurgico','Quirúrgico'), ('farmacologico','Farmacológico'), ('metabolico','Metabólicos'), ('psiquiatrico','Psiquiátricos')]
+                        ] %}
+                        <div class="col-md-6">
+                            {% for value, label in column %}
+                            <div class="row g-1 align-items-center mb-1">
+                                <label class="col-sm-5 form-label mb-0">{{ label }}</label>
+                                <div class="col-sm-7"><input type="text" name="hco_med_personal_{{ value }}" class="form-control form-control-sm" placeholder="Hallazgo"></div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        <div class="col-12"><label class="form-label">Observaciones</label><textarea name="hco_med_antecedentes" rows="2" class="form-control"></textarea></div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold text-uppercase">Gineco-obstétricos</legend>
+                    <div class="row g-2">
+                        <div class="col-md-3"><label class="form-label">Antecedentes gineco-obstétricos</label><input type="text" name="hco_med_ginecoobstetricos" class="form-control" placeholder="Ej. 12 años"></div>
+                        <div class="col-md-3"><label class="form-label">Citología</label><input type="text" name="hco_med_citologia" class="form-control" placeholder="Ej. Hace dos meses"></div>
+                        <div class="col-md-2"><label class="form-label">Gestaciones</label><input type="number" min="0" name="hco_med_gestaciones" class="form-control"></div>
+                        <div class="col-md-2"><label class="form-label">Partos</label><input type="number" min="0" name="hco_med_partos" class="form-control"></div>
+                        <div class="col-md-2"><label class="form-label">Cesáreas</label><input type="number" min="0" name="hco_med_cesareas" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label">Ciclos</label><input type="text" name="hco_med_ciclos" class="form-control" placeholder="Ej. Regular"></div>
+                        <div class="col-md-3"><label class="form-label">Resultado citología</label><input type="text" name="hco_med_resultado_citologia" class="form-control" placeholder="Ej. Normal"></div>
+                        <div class="col-md-2"><label class="form-label">Abortos</label><input type="number" min="0" name="hco_med_abortos" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Fecha última regla</label><input type="date" name="hco_med_fecha_ultima_regla" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Planificación</label><input type="text" name="hco_med_planificacion" class="form-control" placeholder="Ej. Barrera"></div>
+                        <div class="col-md-4"><label class="form-label">Fecha último parto</label><input type="text" name="hco_med_fecha_ultimo_parto" class="form-control" placeholder="Ej. Hace 20 meses"></div>
+                        <div class="col-md-4"><label class="form-label">Fecha de última mamografía</label><input type="text" name="hco_med_mamografia" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Fecha última mamografía</label><input type="date" name="hco_med_fecha_ultima_mamografia" class="form-control"></div>
+                        <div class="col-12"><label class="form-label">Observaciones</label><textarea name="hco_med_ginecoobstetricos_observaciones" rows="2" class="form-control"></textarea></div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold text-uppercase">Revisión de síntomas por sistemas</legend>
+                    <div class="row g-2">
+                        {% for value, label in [
+                            ('piel_faneras', 'Piel y faneras'),
+                            ('otorrinolaringologicos', 'Otorrinolaringológicos'),
+                            ('oftalmologicos', 'Oftalmológicos'),
+                            ('respiratorios', 'Respiratorios'),
+                            ('cardiovasculares', 'Cardiovasculares'),
+                            ('genitourinario', 'Genitourinario'),
+                            ('osteomusculares', 'Osteomusculares'),
+                            ('neurologicos', 'Neurológicos'),
+                            ('endocrinologico', 'Endocrinológico'),
+                            ('psiquiatricos', 'Psiquiátricos'),
+                            ('otros', 'Otros')
+                        ] %}
+                        <div class="col-12 col-md-6">
+                            <div class="row g-2 align-items-center">
+                                <label class="col-sm-4 form-label mb-0 text-uppercase">{{ label }}</label>
+                                <div class="col-sm-3">
+                                    <select name="hco_med_revision_{{ value }}_resultado" class="form-select form-select-sm">
+                                        <option value="">Resultado</option>
+                                        <option value="Niega">Niega</option>
+                                        <option value="Positivo">Positivo</option>
+                                        <option value="No aplica">No aplica</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-5"><input type="text" name="hco_med_revision_{{ value }}_hallazgo" class="form-control form-control-sm" placeholder="Hallazgo"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="col-12"><label class="form-label">Observaciones</label><textarea name="hco_med_revision_sistemas_observaciones" rows="2" class="form-control"></textarea></div>
+                    </div>
+                </fieldset>
+
+                <div class="col-md-6"><label class="form-label">Medicamentos y alergias</label><textarea name="hco_med_medicamentos_alergias" rows="3" class="form-control"></textarea></div>
+
+                <div class="col-12"><hr class="my-2"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">5. Hábitos</h6></div>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Tabaquismo</legend>
+                    <div class="row g-2">
+                        <div class="col-md-2"><label class="form-label">Cigarrillo</label><select name="hco_med_habito_cigarrillo" class="form-select"><option value="">--</option><option>NO</option><option>SI</option></select></div>
+                        <div class="col-md-4"><label class="form-label">Tiempo de consumo</label><div class="input-group"><input type="number" min="0" name="hco_med_habito_cigarrillo_consumo_anios" class="form-control" placeholder="Años"><input type="number" min="0" max="11" name="hco_med_habito_cigarrillo_consumo_meses" class="form-control" placeholder="Meses"></div></div>
+                        <div class="col-md-2"><label class="form-label">N° al día</label><input type="number" min="0" name="hco_med_habito_cigarrillos_dia" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Tiempo de abandono</label><div class="input-group"><input type="number" min="0" name="hco_med_habito_cigarrillo_abandono_anios" class="form-control" placeholder="Años"><input type="number" min="0" max="11" name="hco_med_habito_cigarrillo_abandono_meses" class="form-control" placeholder="Meses"></div></div>
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Licor</legend>
+                    <div class="row g-2">
+                        <div class="col-md-2"><label class="form-label">Licor</label><select name="hco_med_habito_licor" class="form-select"><option value="">--</option><option>NO</option><option>SI</option></select></div>
+                        <div class="col-md-2"><label class="form-label">Frecuencia</label><input type="text" name="hco_med_habito_licor_frecuencia" class="form-control" placeholder="N/A"></div>
+                        <div class="col-md-4"><label class="form-label">Tiempo de consumo</label><div class="input-group"><input type="number" min="0" name="hco_med_habito_licor_consumo_anios" class="form-control" placeholder="Años"><input type="number" min="0" max="11" name="hco_med_habito_licor_consumo_meses" class="form-control" placeholder="Meses"></div></div>
+                        <div class="col-md-4"><label class="form-label">Tiempo de abandono</label><div class="input-group"><input type="number" min="0" name="hco_med_habito_licor_abandono_anios" class="form-control" placeholder="Años"><input type="number" min="0" max="11" name="hco_med_habito_licor_abandono_meses" class="form-control" placeholder="Meses"></div></div>
+                    </div>
+                </fieldset>
+                <div class="col-md-6"><label class="form-label">Hábitos y actividades extralaborales</label><textarea name="hco_med_habitos" rows="3" class="form-control"></textarea></div>
+
+                <div class="col-12"><hr class="my-2"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">6. Examen Físico</h6></div>
+                <div class="col-md-4"><label class="form-label">Aspecto general del paciente</label><textarea name="hco_med_aspecto_general" rows="2" class="form-control"></textarea></div>
+                <div class="col-md-4"><label class="form-label">Índice de cintura-cadera</label><input type="number" step="0.01" min="0" name="hco_med_indice_cintura_cadera" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">T.A. sentado (mmHg)</label><input type="text" name="hco_med_ta_sentado" class="form-control" placeholder="120/80"></div>
                 <div class="col-md-3"><label class="form-label">Peso (kg)</label><input type="number" step="0.1" name="hco_med_peso" class="form-control"></div>
                 <div class="col-md-3"><label class="form-label">Talla (cm)</label><input type="number" name="hco_med_talla" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">Tension arterial</label><input type="text" name="hco_med_tension" placeholder="120/80" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Tensión arterial</label><input type="text" name="hco_med_tension" placeholder="120/80" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Frecuencia respiratoria (RPM)</label><input type="number" min="0" name="hco_med_frecuencia_respiratoria" class="form-control"></div>
                 <div class="col-md-3"><label class="form-label">Pulso (lpm)</label><input type="number" name="hco_med_pulso" class="form-control"></div>
                 <div class="col-md-3"><label class="form-label">SpO2 (%)</label><input type="number" name="hco_med_spo2" class="form-control"></div>
                 <div class="col-md-3"><label class="form-label">Temperatura (C)</label><input type="number" step="0.1" name="hco_med_temperatura" class="form-control"></div>
-                <div class="col-md-6"><label class="form-label">Antecedentes personales</label><textarea name="hco_med_antecedentes" rows="3" class="form-control"></textarea></div>
-                <div class="col-md-6"><label class="form-label">Medicamentos y alergias</label><textarea name="hco_med_medicamentos_alergias" rows="3" class="form-control"></textarea></div>
-                <div class="col-12"><label class="form-label">Examen fisico por sistemas</label><textarea name="hco_med_examen_fisico" rows="4" class="form-control" placeholder="Cabeza y cuello, cardiovascular, respiratorio, osteomuscular, neurologico y piel."></textarea></div>
-                <div class="col-md-6"><label class="form-label">Diagnosticos CIE-10</label><textarea name="hco_med_diagnosticos" rows="3" class="form-control" placeholder="Codigo y diagnostico"></textarea></div>
-                <div class="col-md-6"><label class="form-label">Concepto medico ampliado</label><textarea name="hco_med_concepto" rows="3" class="form-control"></textarea></div>
+                <div class="col-md-3"><label class="form-label">Perímetro abdominal</label><input type="number" step="0.1" name="hco_med_perimetro_abd" class="form-control"></div>
+                <div class="col-md-3"><label class="form-label">Perímetro cadera</label><input type="number" step="0.1" name="hco_med_perimetro_cad" class="form-control"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">Revisión por sistemas</h6></div>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Sistema osteomuscular</legend>
+                    <div class="row g-2">
+                        <div class="col-md-4"><label class="form-label">Columna - Resultado</label><input type="text" name="hco_med_osteomuscular_columna_resultado" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Miembros superiores - Resultado</label><input type="text" name="hco_med_osteomuscular_miembros_superiores_resultado" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Miembros inferiores - Resultado</label><input type="text" name="hco_med_osteomuscular_miembros_inferiores_resultado" class="form-control"></div>
+                        <div class="col-12"><label class="form-label">Observaciones</label><textarea name="hco_med_osteomuscular_observaciones" rows="2" class="form-control"></textarea></div>
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Órganos y sistemas - Ojos</legend>
+                    <div class="row g-2">
+                        {% for value, label, default in [
+                            ('conjuntivas', 'Conjuntivas', 'NORMAL'),
+                            ('pupilas_cornea', 'Pupilas y córnea', 'NORMAL'),
+                            ('anexos', 'Anexos', 'NORMAL'),
+                            ('fondo_ojo', 'Fondo de ojo', 'NO SE EVALÚA')
+                        ] %}
+                        <div class="col-md-3"><label class="form-label">{{ label }}</label><select name="hco_med_ojos_{{ value }}" class="form-select"><option value="">-- Seleccione --</option><option {% if default == 'NORMAL' %}selected{% endif %}>NORMAL</option><option>ANORMAL</option><option {% if default == 'NO SE EVALÚA' %}selected{% endif %}>NO SE EVALÚA</option></select></div>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Boca, nariz y garganta</legend>
+                    <div class="row g-2">
+                        {{ system_result('boca_labios_lengua', 'Boca - Labios y lengua') }}
+                        {{ system_result('pabellones', 'Pabellones') }}
+                        {{ system_result('tabique', 'Tabique') }}
+                        {{ system_result('cornetes', 'Cornetes') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Tórax</legend>
+                    <div class="row g-2">
+                        {{ system_result('torax_senos', 'Senos', 'NO SE EVALÚA') }}
+                        {{ system_result('torax_pulmones', 'Pulmones') }}
+                        {{ system_result('torax_corazon', 'Corazón') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Abdomen</legend>
+                    <div class="row g-2">
+                        {{ system_result('abdomen_pared', 'Pared') }}
+                        {{ system_result('abdomen_visceras_masalgias', 'Vísceras (masas/algias)') }}
+                        {{ system_result('abdomen_hernias', 'Hernias') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Cuello, piel y genitales</legend>
+                    <div class="row g-2">
+                        {{ system_result('cuello', 'Cuello') }}
+                        {{ system_result('piel', 'Piel') }}
+                        {{ system_result('genitales', 'Genitales', 'NO SE EVALÚA') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Vascular</legend>
+                    <div class="row g-2">
+                        {{ system_result('vascular_periferico', 'Periférico') }}
+                        {{ system_result('vascular_linfaticos', 'Linfáticos') }}
+                        {{ system_result('vascular_varices', 'Varices') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Sistema nervioso</legend>
+                    <div class="row g-2">
+                        {{ system_result('nervioso_reflejos', 'Reflejos') }}
+                        {{ system_result('nervioso_marcha', 'Marcha') }}
+                        {{ system_result('nervioso_coordinacion', 'Coordinación') }}
+                        {{ system_result('nervioso_equilibrio_dinamico_estatico', 'Prueba de equilibrio dinámico y estático') }}
+                        {{ system_result('nervioso_romberg', 'Prueba Romberg') }}
+                        {{ system_result('nervioso_babinski', 'Prueba de Babinski') }}
+                        {{ system_result('nervioso_barany', 'Prueba Barany') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Agudeza visual</legend>
+                    <div class="row g-2">
+                        <div class="col-md-3"><label class="form-label">Agudeza visual cercana - Ojo derecho</label><input type="text" name="hco_med_sistema_agudeza_cercana_ojo_derecho" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label">Agudeza visual cercana - Ojo izquierdo</label><input type="text" name="hco_med_sistema_agudeza_cercana_ojo_izquierdo" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label">Agudeza visual lejana - Ojo derecho</label><input type="text" name="hco_med_sistema_agudeza_lejana_ojo_derecho" class="form-control"></div>
+                        <div class="col-md-3"><label class="form-label">Agudeza visual lejana - Ojo izquierdo</label><input type="text" name="hco_med_sistema_agudeza_lejana_ojo_izquierdo" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label">Corrección</label><select name="hco_med_sistema_agudeza_correccion" class="form-select"><option value="">-- Seleccione --</option><option>Con corrección</option><option>Sin corrección</option></select></div>
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Otoscopia</legend>
+                    <div class="row g-2">
+                        {{ system_result('otoscopia', 'Otoscopia', 'NORMAL') }}
+                        {{ yes_no('otoscopia_oido_derecho', 'Oído derecho', 'SI') }}
+                        {{ yes_no('otoscopia_oido_izquierdo', 'Oído izquierdo', 'SI') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Tapón</legend>
+                    <div class="row g-2">
+                        {{ yes_no('tapon_oido_derecho', 'Oído derecho') }}
+                        {{ yes_no('tapon_oido_izquierdo', 'Oído izquierdo') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Timpanopatía</legend>
+                    <div class="row g-2">
+                        {{ yes_no('timpanopatia_oido_derecho', 'Oído derecho') }}
+                        {{ yes_no('timpanopatia_oido_izquierdo', 'Oído izquierdo') }}
+                    </div>
+                </fieldset>
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Dentadura</legend>
+                    <div class="row g-2">
+                        {{ yes_no('dentadura_buen_estado', 'Buen estado') }}
+                        {{ yes_no('dentadura_completa', 'Completa', 'SI') }}
+                        {{ yes_no('dentadura_protesis', 'Prótesis') }}
+                    </div>
+                </fieldset>
+                <div class="col-12"><label class="form-label">Examen físico por sistemas</label><textarea name="hco_med_examen_fisico" rows="3" class="form-control"></textarea></div>
+
+                <div class="col-12"><hr class="my-2"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">7. Esquema de vacunación</h6></div>
+                {% for vacuna in [('tetano', 'Tétano'), ('hepatitis_b', 'Hepatitis B'), ('influenza_estacional', 'Influenza estacional'), ('fiebre_amarilla', 'Fiebre amarilla'), ('influenza_h1n1', 'Influenza H1N1'), ('mmr', 'MMR'), ('varicela', 'Varicela'), ('hepatitis_a', 'Hepatitis A'), ('covid_19', 'COVID 19'), ('vph', 'VPH')] %}
+                <fieldset class="col-md-6 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">{{ vacuna[1] }}</legend>
+                    <div class="row g-2">
+                        <div class="col-md-6"><label class="form-label">N° de dosis</label><input type="number" min="0" name="hco_med_vacuna_{{ vacuna[0] }}_dosis" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label">Fecha de última dosis</label><input type="date" name="hco_med_vacuna_{{ vacuna[0] }}_fecha" class="form-control"></div>
+                    </div>
+                </fieldset>
+                {% endfor %}
+                <fieldset class="col-12 border rounded p-2">
+                    <legend class="float-none w-auto px-1 mb-1 fs-6 fw-semibold">Otra vacuna</legend>
+                    <div class="row g-2">
+                        <div class="col-md-4"><label class="form-label">Nombre de la vacuna</label><input type="text" name="hco_med_vacuna_otra_nombre" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">N° de dosis</label><input type="number" min="0" name="hco_med_vacuna_otra_dosis" class="form-control"></div>
+                        <div class="col-md-4"><label class="form-label">Fecha de última dosis</label><input type="date" name="hco_med_vacuna_otra_fecha" class="form-control"></div>
+                    </div>
+                </fieldset>
+
+                <div class="col-12"><hr class="my-2"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">8. Vigilancia Epidemiológica</h6></div>
+                <div class="col-12"><label class="form-label">Programas SVE activos</label><div class="row">
+                    {% for value, label in [('ruido','Conservacion auditiva / ruido'), ('radiaciones','Radiaciones'), ('voz','Cuidado de la voz'), ('biomecanico','Biomecanico / osteomuscular'), ('biologico','Riesgo biologico'), ('psicosocial','Riesgo psicosocial'), ('quimico','Riesgo quimico')] %}
+                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="hco_sve_programas" value="{{ value }}" id="hco_sve_{{ value }}"><label class="form-check-label" for="hco_sve_{{ value }}">{{ label }}</label></div></div>
+                    {% endfor %}
+                </div></div>
+                <div class="col-md-6"><label class="form-label">Criterio de inclusion</label><select name="hco_sve_criterio" class="form-select"><option value="">--</option><option>Exposicion al riesgo</option><option>Sintomas relacionados</option><option>Diagnostico confirmado</option><option>Post-accidente laboral</option><option>Seguimiento post-tratamiento</option></select></div>
+                <div class="col-md-6"><label class="form-label">Periodicidad del seguimiento</label><select name="hco_sve_periodicidad" class="form-select"><option value="">--</option><option>Mensual</option><option>Trimestral</option><option>Semestral</option><option>Anual</option><option>Segun evolucion clinica</option></select></div>
+                <div class="col-12"><label class="form-label">Hallazgos, medidas de control y plan SVE</label><textarea name="hco_sve_plan" rows="4" class="form-control"></textarea></div>
+                <div class="col-md-6"><label class="form-label">Proxima valoracion SVE</label><input type="date" name="hco_sve_proxima" class="form-control"></div>
+                <div class="col-md-6"><label class="form-label">Responsable del seguimiento</label><input type="text" name="hco_sve_responsable" class="form-control"></div>
+
+                <div class="col-12"><hr class="my-2"></div>
+                <div class="col-12"><h6 class="fw-bold text-primary mb-1">9. Diagnóstico y Concepto Médico Laboral</h6></div>
+                <div class="col-md-6"><label class="form-label">Diagnósticos CIE-10</label><textarea name="hco_med_diagnosticos" rows="3" class="form-control" placeholder="Código y diagnóstico"></textarea></div>
+                <div class="col-md-6"><label class="form-label">Concepto médico de aptitud</label><select name="hco_med_concepto" class="form-select"><option value="">-- Seleccione --</option><option value="sin_restricciones">Sin restricciones</option><option value="con_restricciones">Con restricciones</option><option value="aplazado">Aplazado</option></select></div>
+                <div class="col-md-6"><label class="form-label">Remisiones / Observación restricción</label><textarea name="hco_med_remisiones" rows="3" class="form-control"></textarea></div>
+                <div class="col-12"><label class="form-label">Recomendaciones generales</label><textarea name="recomendaciones_medicas" rows="3" class="form-control"></textarea></div>
+                <div class="col-12"><label class="form-label">Restricciones médicas</label><textarea name="restricciones_medicas" rows="3" class="form-control"></textarea></div>
+                <div class="col-md-4"><label class="form-label">Firma del paciente</label><input type="text" name="hco_med_firma_paciente" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">Firma del profesional evaluador</label><input type="text" name="hco_med_firma_profesional" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">Tarjeta profesional</label><input type="text" name="hco_med_tarjeta" class="form-control"></div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="col-12 hco-panel" data-hco-module="psic">
+<div class="col-12 hco-panel d-none" data-hco-module="psic">
     {{ personal_block() }}
     <div class="card border-secondary">
-        <div class="card-header bg-secondary text-white">Valoracion de psicologia ocupacional</div>
+        <div class="card-header bg-secondary text-white">Valoración de psicología ocupacional</div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label">Tipo de valoracion</label><select name="hco_psic_tipo" class="form-select"><option value="">--</option><option>Valoracion de riesgo psicosocial</option><option>Reintegro laboral</option><option>Post-incapacidad</option><option>Seguimiento</option><option>Programa SVE psicosocial</option></select></div>
@@ -69,11 +518,13 @@
     </div>
 </div>
 
-<div class="col-12 hco-panel" data-hco-module="to">
+<div class="col-12 hco-panel d-none" data-hco-module="to">
     {{ personal_block() }}
     <div class="card border-info">
-        <div class="card-header bg-info text-white">Terapia ocupacional y reintegro</div>
+        <div class="card-header bg-info text-white">Valoración de terapia ocupacional</div>
         <div class="card-body"><div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Profesional evaluador</label><input type="text" name="hco_to_profesional_evaluador" class="form-control"></div>
+            <div class="col-md-6"><label class="form-label">Tarjeta profesional</label><input type="text" name="hco_to_tarjeta_profesional" class="form-control"></div>
             <div class="col-md-6"><label class="form-label">Roles y actividades afectadas</label><textarea name="hco_to_roles_avd" rows="3" class="form-control"></textarea></div>
             <div class="col-md-6"><label class="form-label">Rutina y motivaciones laborales</label><textarea name="hco_to_rutina" rows="3" class="form-control"></textarea></div>
             <div class="col-md-4"><label class="form-label">Tolerancia sedente</label><select name="hco_to_sedente" class="form-select"><option value="">--</option><option>Menos de 30 min</option><option>30 a 60 min</option><option>1 a 2 horas</option><option>Mas de 2 horas</option></select></div>
@@ -84,10 +535,10 @@
     </div>
 </div>
 
-<div class="col-12 hco-panel" data-hco-module="fis">
+<div class="col-12 hco-panel d-none" data-hco-module="fis">
     {{ personal_block() }}
     <div class="card border-warning">
-        <div class="card-header bg-warning">Fisioterapia ocupacional</div>
+        <div class="card-header bg-warning">Valoración de fisioterapia ocupacional</div>
         <div class="card-body"><div class="row g-3">
             <div class="col-md-4"><label class="form-label">Region anatomica</label><input type="text" name="hco_fis_region" class="form-control"></div>
             <div class="col-md-4"><label class="form-label">Diagnostico de referencia</label><input type="text" name="hco_fis_diagnostico" class="form-control"></div>
@@ -100,26 +551,7 @@
     </div>
 </div>
 
-<div class="col-12 hco-panel" data-hco-module="sve">
-    {{ personal_block() }}
-    <div class="card border-success">
-        <div class="card-header bg-success text-white">Sistemas de vigilancia epidemiologica</div>
-        <div class="card-body"><div class="row g-3">
-            <div class="col-12"><label class="form-label">Programas SVE activos</label><div class="row">
-                {% for value, label in [('ruido','Conservacion auditiva / ruido'), ('radiaciones','Radiaciones'), ('voz','Cuidado de la voz'), ('biomecanico','Biomecanico / osteomuscular'), ('biologico','Riesgo biologico'), ('psicosocial','Riesgo psicosocial'), ('quimico','Riesgo quimico')] %}
-                <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="hco_sve_programas" value="{{ value }}" id="hco_sve_{{ value }}"><label class="form-check-label" for="hco_sve_{{ value }}">{{ label }}</label></div></div>
-                {% endfor %}
-            </div></div>
-            <div class="col-md-6"><label class="form-label">Criterio de inclusion</label><select name="hco_sve_criterio" class="form-select"><option value="">--</option><option>Exposicion al riesgo</option><option>Sintomas relacionados</option><option>Diagnostico confirmado</option><option>Post-accidente laboral</option><option>Seguimiento post-tratamiento</option></select></div>
-            <div class="col-md-6"><label class="form-label">Periodicidad del seguimiento</label><select name="hco_sve_periodicidad" class="form-select"><option value="">--</option><option>Mensual</option><option>Trimestral</option><option>Semestral</option><option>Anual</option><option>Segun evolucion clinica</option></select></div>
-            <div class="col-12"><label class="form-label">Hallazgos, medidas de control y plan SVE</label><textarea name="hco_sve_plan" rows="4" class="form-control"></textarea></div>
-            <div class="col-md-6"><label class="form-label">Proxima valoracion SVE</label><input type="date" name="hco_sve_proxima" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label">Responsable del seguimiento</label><input type="text" name="hco_sve_responsable" class="form-control"></div>
-        </div></div>
-    </div>
-</div>
-
-<div class="col-12 hco-panel" data-hco-module="cert">
+<div class="col-12 hco-panel d-none" data-hco-module="cert">
     {{ personal_block() }}
     <div class="card border-dark">
         <div class="card-header bg-dark text-white">Certificaciones reglamentarias</div>
@@ -132,7 +564,7 @@
     </div>
 </div>
 
-<div class="col-12 hco-panel" data-hco-module="concat">
+<div class="col-12 hco-panel d-none" data-hco-module="concat">
     {{ personal_block() }}
     <div class="card border-success">
         <div class="card-header bg-success text-white">Concepto multidisciplinario integrador</div>
@@ -148,83 +580,5 @@
 
 <div class="col-12">
     <hr>
-    <h5 class="text-primary">Historia Clinica Ocupacional Multidisciplinaria</h5>
     <p class="text-muted small mb-3">Campos complementarios basados en la Resolucion 1843 de 2025.</p>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const typeSelect = document.getElementById('tipo_novedad');
-    const panels = document.querySelectorAll('.hco-panel');
-    const examName = document.getElementById('hco_exam_name');
-    const examNameTitle = examName ? examName.querySelector('h4') : null;
-    const examLabels = {
-        periodico_ocupacional: 'Examen periódico ocupacional',
-        pre_ingreso: 'Examen de pre-ingreso',
-        ingreso: 'Examen de ingreso',
-        egreso: 'Examen de egreso',
-        reintegro: 'Examen de reintegro laboral',
-        retorno_laboral: 'Examen de retorno laboral',
-        post_incapacidad: 'Examen post-incapacidad',
-        cambio_cargo: 'Examen por cambio de cargo',
-        sistema_vigilancia: 'Examen de sistema de vigilancia epidemiológica',
-        valoracion_psicosocial: 'Valoración de psicología ocupacional',
-        terapia_ocupacional: 'Valoración de terapia ocupacional',
-        fisioterapia: 'Valoración de fisioterapia ocupacional',
-        certificacion_alto_riesgo: 'Certificación de actividad de alto riesgo',
-        integrador_multidisciplinario: 'Concepto multidisciplinario integrador',
-        solicitado_eps: 'Examen solicitado por la EPS',
-        otro: 'Examen ocupacional'
-    };
-    const updateHcoPanels = function () {
-        const value = typeSelect ? typeSelect.value : '';
-        if (examName && examNameTitle) {
-            examNameTitle.textContent = examLabels[value] || '';
-            examName.style.display = examLabels[value] ? 'block' : 'none';
-        }
-        panels.forEach(function (panel) {
-            const module = panel.dataset.hcoModule;
-            const moduleTypes = {
-                med: ['periodico_ocupacional', 'pre_ingreso', 'ingreso', 'egreso', 'reintegro', 'retorno_laboral', 'post_incapacidad', 'cambio_cargo'],
-                sve: ['sistema_vigilancia'],
-                psic: ['valoracion_psicosocial'],
-                to: ['terapia_ocupacional'],
-                fis: ['fisioterapia'],
-                cert: ['certificacion_alto_riesgo'],
-                concat: ['integrador_multidisciplinario']
-            };
-            const visible = (moduleTypes[module] || []).includes(value);
-            panel.style.display = visible ? 'block' : 'none';
-        });
-    };
-    if (typeSelect) {
-        typeSelect.addEventListener('change', updateHcoPanels);
-        updateHcoPanels();
-    }
-
-    const hcoForm = document.querySelector('form[method="POST"]');
-    if (hcoForm) {
-        hcoForm.addEventListener('submit', function (event) {
-            const fields = Array.from(hcoForm.querySelectorAll('input, select, textarea'));
-            const emptyField = fields.find(function (field) {
-                if (field.type === 'hidden' || field.type === 'file' || field.type === 'checkbox' || field.type === 'radio' || field.disabled || field.offsetParent === null) {
-                    return false;
-                }
-
-                return !String(field.value || '').trim();
-            });
-
-            fields.forEach(function (field) {
-                field.classList.remove('is-invalid');
-            });
-
-            if (emptyField) {
-                event.preventDefault();
-                emptyField.classList.add('is-invalid');
-                emptyField.focus();
-                emptyField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
-    }
-});
-</script>

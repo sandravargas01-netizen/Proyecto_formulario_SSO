@@ -20,14 +20,23 @@
             <div class="col-md-6">
                 <p class="mb-2"><strong>Cédula:</strong> {{ empleado.cedula }}</p>
                 <p class="mb-2"><strong>Nombre:</strong> {{ empleado.nombres }} {{ empleado.apellidos }}</p>
+                <p class="mb-2"><strong>Fecha de nacimiento:</strong> {{ empleado.fecha_nacimiento or 'No registrada' }}</p>
+                <p class="mb-2"><strong>Ciudad de nacimiento:</strong> {{ empleado.ciudad_nacimiento or 'No registrada' }}</p>
+                <p class="mb-2"><strong>Ciudad de residencia:</strong> {{ empleado.ciudad_residencia or 'No registrada' }}</p>
+                <p class="mb-2"><strong>Sexo:</strong> {{ {'M': 'Masculino', 'F': 'Femenino'}.get(empleado.sexo, 'No registrado') }}</p>
+                <p class="mb-2"><strong>Estado civil:</strong> {{ empleado.estado_civil or 'No registrado' }}</p>
+                <p class="mb-2"><strong>Escolaridad:</strong> {{ empleado.escolaridad or 'No registrada' }}</p>
                 <p class="mb-2"><strong>Correo:</strong> {{ empleado.correo or 'No registrado' }}</p>
                 <p class="mb-2"><strong>Teléfono:</strong> {{ empleado.telefono or 'No registrado' }}</p>
+                <p class="mb-2"><strong>Dirección:</strong> {{ empleado.direccion or 'No registrada' }}</p>
             </div>
             <div class="col-md-6">
                 <p class="mb-2"><strong>Estado:</strong> {{ empleado.estado }}</p>
                 <p class="mb-2"><strong>Fecha ingreso:</strong> {{ empleado.fecha_ingreso }}</p>
                 <p class="mb-2"><strong>Fecha retiro:</strong> {{ empleado.fecha_retiro or 'No registrado' }}</p>
-                <p class="mb-2"><strong>EPS/AFP:</strong> {{ empleado.eps and empleado.eps.nombre or empleado.id_eps }} / {{ empleado.afp and empleado.afp.nombre or empleado.id_afp }}</p>
+                <p class="mb-2"><strong>EPS:</strong> {{ empleado.eps.nombre if empleado.eps else 'No registrada' }}</p>
+                <p class="mb-2"><strong>AFP:</strong> {{ empleado.afp.nombre if empleado.afp else 'No registrada' }}</p>
+                <p class="mb-2"><strong>ARL:</strong> {{ empleado.arl or 'No registrada' }}</p>
             </div>
         </div>
     </div>

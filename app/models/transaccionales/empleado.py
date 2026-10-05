@@ -46,8 +46,32 @@ class Empleado(db.Model):
         db.Date
     )
 
+    ciudad_nacimiento = db.Column(
+        db.String(120)
+    )
+
+    ciudad_residencia = db.Column(
+        db.String(120)
+    )
+
     sexo = db.Column(
         db.String(1)
+    )
+
+    escolaridad = db.Column(
+        db.String(80)
+    )
+
+    estado_civil = db.Column(
+        db.String(40)
+    )
+
+    direccion = db.Column(
+        db.String(200)
+    )
+
+    arl = db.Column(
+        db.String(120)
     )
 
     telefono = db.Column(

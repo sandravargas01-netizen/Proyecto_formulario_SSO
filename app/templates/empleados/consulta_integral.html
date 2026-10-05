@@ -122,12 +122,21 @@
                         <div class="d-flex gap-1 flex-wrap">
                             <a href="{{ url_for('examen.detalle', id=examen.id) }}" class="btn btn-sm btn-outline-primary">Ver detalle</a>
                             <a href="{{ url_for('examen.descargar_examen_pdf', id=examen.id) }}" class="btn btn-sm btn-outline-secondary" title="Descargar PDF">PDF Examen</a>
+                            <a href="{{ url_for('examen.editar', id=examen.id) }}" class="btn btn-sm btn-outline-warning" title="Editar examen">Editar</a>
                             {% if examen.pdf_examen %}
                                 <a href="{{ url_for('examen.pdf_file', filename=examen.pdf_examen) }}" class="btn btn-sm btn-outline-success">Descargar información</a>
                             {% endif %}
                             {% if examen.pdf_eps %}
                                 <a href="{{ url_for('examen.pdf_file', filename=examen.pdf_eps) }}" class="btn btn-sm btn-outline-secondary">PDF EPS</a>
                             {% endif %}
+                            <form method="POST" action="{{ url_for('examen.eliminar_pdf', id=examen.id) }}" class="d-inline"
+                                  onsubmit="return confirm('¿Eliminar el PDF generado de este examen?');">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Eliminar PDF generado">Eliminar PDF</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('examen.eliminar', id=examen.id) }}" class="d-inline"
+                                  onsubmit="return confirm('¿Eliminar definitivamente este registro de examen? Esta acción no se puede deshacer.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar registro de examen">Eliminar</button>
+                            </form>
                         </div>
                     </li>
                     {% endfor %}
@@ -224,16 +233,38 @@
                             <input type="text" name="hc_edad" id="hc_edad" class="form-control hc-observable" data-label="Edad" readonly>
                         </div>
                         <div class="col-md-2">
+                            <label class="form-label">Sexo</label>
+                            <select name="hc_sexo" class="form-select hc-observable" data-label="Sexo">
+                                <option value="">-- Seleccione --</option>
+                                <option value="M" {% if empleado.sexo == 'M' %}selected{% endif %}>Masculino</option>
+                                <option value="F" {% if empleado.sexo == 'F' %}selected{% endif %}>Femenino</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
                             <label class="form-label">Estado civil</label>
-                            <input type="text" name="hc_estado_civil" class="form-control hc-observable" data-label="Estado civil">
+                            <input type="text" name="hc_estado_civil" class="form-control hc-observable" data-label="Estado civil" value="{{ empleado.estado_civil or '' }}">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Ciudad de Residencia</label>
-                            <input type="text" name="hc_ciudad_residencia" class="form-control hc-observable" data-label="Ciudad de Residencia">
+                            <select name="hc_ciudad_residencia" class="form-select hc-observable" data-label="Ciudad de Residencia">
+                                <option value="">-- Seleccione --</option>
+                                {% for ciudad in ['Bogotá D.C.', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Ibagué', 'Villavicencio', 'Manizales', 'Pasto', 'Neiva', 'Montería', 'Armenia', 'Sincelejo', 'Valledupar', 'Popayán', 'Tunja', 'Riohacha', 'Quibdó', 'Florencia', 'Mocoa', 'Yopal', 'Leticia', 'Arauca', 'Puerto Carreño', 'Inírida', 'San José del Guaviare', 'Mitú', 'San Andrés'] %}
+                                <option value="{{ ciudad }}" {% if empleado.ciudad_residencia == ciudad %}selected{% endif %}>{{ ciudad }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Ciudad de Nacimiento</label>
+                            <select name="hc_ciudad_nacimiento" class="form-select hc-observable" data-label="Ciudad de Nacimiento">
+                                <option value="">-- Seleccione --</option>
+                                {% for ciudad in ['Bogotá D.C.', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Ibagué', 'Villavicencio', 'Manizales', 'Pasto', 'Neiva', 'Montería', 'Armenia', 'Sincelejo', 'Valledupar', 'Popayán', 'Tunja', 'Riohacha', 'Quibdó', 'Florencia', 'Mocoa', 'Yopal', 'Leticia', 'Arauca', 'Puerto Carreño', 'Inírida', 'San José del Guaviare', 'Mitú', 'San Andrés'] %}
+                                <option value="{{ ciudad }}" {% if empleado.ciudad_nacimiento == ciudad %}selected{% endif %}>{{ ciudad }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="col-md-5">
                             <label class="form-label">Dirección</label>
-                            <input type="text" name="hc_direccion" class="form-control hc-observable" data-label="Dirección">
+                            <input type="text" name="hc_direccion" class="form-control hc-observable" data-label="Dirección" value="{{ empleado.direccion or '' }}">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Teléfono de Contacto</label>
@@ -328,12 +359,9 @@
                             <label class="form-label">Escolaridad</label>
                             <select name="hc_escolaridad" class="form-select hc-observable" data-label="Escolaridad">
                                 <option value="">-- Seleccione --</option>
-                                <option value="Bachiller">Bachiller</option>
-                                <option value="Técnico">Técnico</option>
-                                <option value="Tecnólogo">Tecnólogo</option>
-                                <option value="Especialización">Especialización</option>
-                                <option value="Doctorado">Doctorado</option>
-                                <option value="Profesional">Profesional</option>
+                                {% for nivel in ['Bachiller', 'Técnico', 'Tecnólogo', 'Profesional', 'Especialización', 'Maestría', 'Doctorado'] %}
+                                <option value="{{ nivel }}" {% if empleado.escolaridad == nivel %}selected{% endif %}>{{ nivel }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -358,15 +386,15 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">EPS</label>
-                            <input type="text" name="eps" class="form-control hc-observable" data-label="EPS">
+                            <input type="text" name="eps" class="form-control hc-observable" data-label="EPS" value="{{ empleado.eps.nombre if empleado.eps else '' }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">AFP</label>
-                            <input type="text" name="hc_afp" class="form-control hc-observable" data-label="AFP">
+                            <input type="text" name="hc_afp" class="form-control hc-observable" data-label="AFP" value="{{ empleado.afp.nombre if empleado.afp else '' }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">ARL</label>
-                            <input type="text" name="hc_arl" class="form-control hc-observable" data-label="ARL">
+                            <input type="text" name="hc_arl" class="form-control hc-observable" data-label="ARL" value="{{ empleado.arl or '' }}">
                         </div>
                     </div>
                 </div>
@@ -1237,11 +1265,9 @@
                             <label class="form-label">Concepto médico de aptitud laboral</label>
                             <select name="concepto_de_aptitud" class="form-select hc-observable" data-label="Concepto médico de aptitud laboral">
                                 <option value="">-- Seleccione --</option>
-                                <option value="apto">Apto</option>
-                                <option value="apto">Apto con recomendación</option>
-                                <option value="apto_con_restricciones">Apto con restricción</option>
-                                <option value="pendiente">Aplazado temporalmente</option>
-                                <option value="no_apto">No apto</option>
+                                <option value="sin_restricciones">Sin restricciones</option>
+                                <option value="con_restricciones">Con restricciones</option>
+                                <option value="aplazado">Aplazado</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -1314,6 +1340,9 @@
                         <div class="col-md-6"><label class="form-label">Licencia fisioterapeuta</label><input type="text" name="hc_lic_fisio" class="form-control hc-observable" data-label="Licencia fisioterapeuta"></div>
                         <div class="col-md-6"><label class="form-label">Profesional psicología</label><input type="text" name="hc_firma_psico" class="form-control hc-observable" data-label="Firma psicología"></div>
                         <div class="col-md-6"><label class="form-label">Licencia psicología</label><input type="text" name="hc_lic_psico" class="form-control hc-observable" data-label="Licencia psicología"></div>
+                        <div class="col-md-4"><label class="form-label">Firma del paciente</label><input type="text" name="hco_med_firma_paciente" class="form-control hc-observable" data-label="Firma del paciente"></div>
+                        <div class="col-md-4"><label class="form-label">Firma del profesional evaluador</label><input type="text" name="hco_med_firma_profesional" class="form-control hc-observable" data-label="Firma del profesional evaluador"></div>
+                        <div class="col-md-4"><label class="form-label">Tarjeta profesional</label><input type="text" name="hco_med_tarjeta" class="form-control hc-observable" data-label="Tarjeta profesional"></div>
                     </div>
                 </div>
 

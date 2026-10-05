@@ -100,6 +100,26 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
+                    <label class="form-label">Ciudad de nacimiento</label>
+                    <select name="ciudad_nacimiento" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        {% for municipio in municipios %}
+                        <option value="{{ municipio }}">{{ municipio }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Ciudad de residencia</label>
+                    <select name="ciudad_residencia" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        {% for municipio in municipios %}
+                        <option value="{{ municipio }}">{{ municipio }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
 
                     <label class="form-label">
                         Teléfono
@@ -123,6 +143,47 @@
                         name="correo"
                         class="form-control">
 
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Escolaridad</label>
+                    <select name="escolaridad" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        <option>Bachiller</option>
+                        <option>Técnico</option>
+                        <option>Tecnólogo</option>
+                        <option>Profesional</option>
+                        <option>Especialización</option>
+                        <option>Maestría</option>
+                        <option>Doctorado</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Estado civil</label>
+                    <select name="estado_civil" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        <option>Soltero(a)</option>
+                        <option>Casado(a)</option>
+                        <option>Unión libre</option>
+                        <option>Separado(a)</option>
+                        <option>Divorciado(a)</option>
+                        <option>Viudo(a)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" name="direccion" class="form-control">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">ARL</label>
+                    <input type="text" name="arl" class="form-control">
                 </div>
 
             </div>
@@ -201,6 +262,8 @@
                         name="id_cargo"
                         class="form-select">
 
+                        <option value="">-- Seleccione --</option>
+
                         {% for cargo in cargos %}
                         <option value="{{ cargo.id_cargo }}">
                             {{ cargo.nombre }}
@@ -221,6 +284,8 @@
                         name="id_dependencia"
                         class="form-select">
 
+                        <option value="">-- Seleccione --</option>
+
                         {% for dependencia in dependencias %}
                         <option value="{{ dependencia.id_dependencia }}">
                             {{ dependencia.nombre }}
@@ -240,6 +305,8 @@
                     <select
                         name="id_centro_costo"
                         class="form-select">
+
+                        <option value="">-- Seleccione --</option>
 
                         {% for centro in centros %}
                         <option value="{{ centro.id_centro_costo }}">
@@ -265,6 +332,8 @@
                         name="id_vinculacion"
                         class="form-select">
 
+                        <option value="">-- Seleccione --</option>
+
                         {% for vinculacion in vinculaciones %}
                         <option value="{{ vinculacion.id_vinculacion }}">
                             {{ vinculacion.nombre }}
@@ -284,6 +353,8 @@
                     <select
                         name="id_estamento"
                         class="form-select">
+
+                        <option value="">-- Seleccione --</option>
 
                         {% for estamento in estamentos %}
                         <option value="{{ estamento.id_estamento }}">
@@ -363,5 +434,44 @@
     </div>
 
 </div>
+
+<script>
+    // Restaurar valores del formulario desde localStorage en caso de error
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        // Si hay un mensaje de error, restaurar valores
+        const errorAlert = document.querySelector('.alert-danger');
+        if (errorAlert) {
+            inputs.forEach(input => {
+                const savedValue = localStorage.getItem(input.name);
+                if (savedValue) {
+                    input.value = savedValue;
+                }
+            });
+        }
+        
+        // Guardar valores mientras se escriben
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                localStorage.setItem(this.name, this.value);
+            });
+            input.addEventListener('input', function() {
+                localStorage.setItem(this.name, this.value);
+            });
+        });
+        
+        // Limpiar localStorage después de guardar exitosamente
+        form.addEventListener('submit', function(e) {
+            // Si el formulario se envía sin errores, limpiar localStorage
+            setTimeout(function() {
+                inputs.forEach(input => {
+                    localStorage.removeItem(input.name);
+                });
+            }, 500);
+        });
+    });
+</script>
 
 {% endblock %}

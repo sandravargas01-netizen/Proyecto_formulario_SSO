@@ -5,212 +5,47 @@
 <div class="container-fluid">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        
-       
+        {% if is_edit %}
+        <div>
+            <h4 class="mb-0">Editar Examen Ocupacional</h4>
+            <p class="text-muted mb-0">Modifique la información del examen y guarde los cambios.</p>
+        </div>
+        <a href="{{ url_for('examen.detalle', id=examen.id) }}" class="btn btn-outline-secondary">Cancelar</a>
+        {% endif %}
     </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
             <form method="POST" enctype="multipart/form-data">
-                {% include 'examenes/_hco_modules.html' %}
-                <div class="row g-3">
-                    <div class="col-md-6" id="tipo_examen_section">
+                <h4 class="text-primary fw-bold mb-3" id="tituloFormulario">Valoración ocupacional laboral</h4>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
                         <label class="form-label">Tipo de examen</label>
-                        <select name="tipo_novedad" id="tipo_novedad" class="form-select" required>
+                        <select name="tipo_examen" id="tipo_examen" class="form-select" required>
                             <option value="">-- Seleccione --</option>
-                            <option value="periodico_ocupacional">Examen periódico ocupacional</option>
                             <option value="pre_ingreso">Examen de pre-ingreso</option>
-                            <option value="ingreso">Examen de ingreso</option>
+                            <option value="periodico_ocupacional">Examen periódico</option>
+                            <option value="cambio_ocupacion">Examen por cambio de ocupación</option>
                             <option value="egreso">Examen de egreso</option>
-                            <option value="reintegro">Reintegro</option>
-                            <option value="retorno_laboral">Retorno laboral</option>
-                            <option value="post_incapacidad">Post incapacidad</option>
-                            <option value="cambio_cargo">Cambio de cargo</option>
-                            <option value="sistema_vigilancia">Sistema de vigilancia epidemiológica (examen)</option>
-                            <option value="valoracion_psicosocial">Valoración de psicología ocupacional</option>
-                            <option value="terapia_ocupacional">Valoración de terapia ocupacional</option>
-                            <option value="fisioterapia">Valoración de fisioterapia ocupacional</option>
-                            <option value="certificacion_alto_riesgo">Certificación de actividad de alto riesgo</option>
-                            <option value="integrador_multidisciplinario">Concepto multidisciplinario integrador</option>
-                            <option value="solicitado_eps">Solicitado por la EPS</option>
-                            <option value="otro">Otro</option>
+                            <option value="post_incapacidad">Examen de post-incapacidad</option>
+                            <option value="retorno_laboral">Examen de retorno laboral</option>
+                            <option value="seguimiento">Examen de seguimiento</option>
                         </select>
                     </div>
-
-                    <div class="col-12" id="sv_section" style="display:none;">
-                        <label class="form-label">Riesgos (seleccione uno o varios)</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="riesgo[]" value="quimico" id="riesgo_quimico">
-                            <label class="form-check-label" for="riesgo_quimico">Químico</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="riesgo[]" value="psicosocial" id="riesgo_psicosocial">
-                            <label class="form-check-label" for="riesgo_psicosocial">Psicosocial</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="riesgo[]" value="ruido" id="riesgo_ruido">
-                            <label class="form-check-label" for="riesgo_ruido">Ruido</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="riesgo[]" value="visual" id="riesgo_visual">
-                            <label class="form-check-label" for="riesgo_visual">Visual</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="riesgo[]" value="biomecanico" id="riesgo_biomecanico">
-                            <label class="form-check-label" for="riesgo_biomecanico">Biomecánico</label>
-                        </div>
-                    </div>
-
-                    <div class="col-12" id="eps_section" style="display:none;">
-                        <label class="form-label">Especialidad solicitada</label>
-                        <select name="especialidad_eps" class="form-select">
-                            <option value="">-- Seleccione especialidad --</option>
-                            <option value="medicina_general">Medicina General</option>
-                            <option value="medicina_ocupacional">Medicina Ocupacional</option>
-                            <option value="otorrino">Otorrinolaringología</option>
-                            <option value="oftalmologia">Oftalmología</option>
-                            <option value="psicologia">Psicología</option>
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de valoración</label>
+                        <select name="tipo_valoracion" id="tipo_valoracion" class="form-select" required>
+                            <option value="">-- Seleccione --</option>
+                            <option value="valoracion_ocupacional">Valoración ocupacional</option>
+                            <option value="valoracion_psicosocial">Valoración por Psicología</option>
+                            <option value="terapia_ocupacional">Valoración por Terapia Ocupacional</option>
+                            <option value="fisioterapia">Valoración por Fisioterapia Ocupacional</option>
                         </select>
-
-                        <label class="form-label mt-2">Adjuntar documento (PDF)</label>
-                        <input type="file" name="pdf_eps" accept="application/pdf" class="form-control">
-
-                        <label class="form-label mt-2">Observaciones EPS</label>
-                        <textarea name="observaciones_eps" class="form-control" rows="3"></textarea>
                     </div>
-
-                    <div class="col-12" id="otro_section" style="display:none;">
-                        <label class="form-label">Descripción de la novedad</label>
-                        <textarea name="descripcion_otro" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <div class="col-12" id="periodico_section" style="display:none;">
-
-    <hr>
-
-    <h5 class="text-primary">
-        Concepto Médico Ocupacional
-    </h5>
-
-    <div class="row mt-3">
-
-    <div class="col-md-6">
-
-        <label class="form-label">
-            Fecha del examen
-        </label>
-
-        <input
-            type="date"
-            name="fecha_examen"
-            class="form-control">
-
-    </div>
-
-</div>
-
-    <div class="row">
-
-        <div class="col-md-6">
-
-            <label class="form-label">
-                Concepto de Aptitud
-            </label>
-
-            <select
-                name="concepto_de_aptitud"
-                class="form-select">
-
-                <option value="">-- Seleccione --</option>
-                <option value="apto">Apto</option>
-                <option value="apto_con_restricciones">
-                    Apto con restricciones
-                </option>
-                <option value="no_apto">
-                    No apto
-                </option>
-
-            </select>
-
-        </div>
-
-    </div>
-
-    <div class="mt-3">
-
-        <label class="form-label">
-            Restricciones Médicas
-        </label>
-
-        <textarea
-            name="restricciones_medicas"
-            class="form-control"
-            rows="3"></textarea>
-
-    </div>
-
-    <div class="mt-3">
-
-        <label class="form-label">
-            Recomendaciones Médicas
-        </label>
-
-        <textarea
-            name="recomendaciones_medicas"
-            class="form-control"
-            rows="3"></textarea>
-
-    </div>
-
-    <div class="row mt-3">
-
-        <div class="col-md-6">
-
-            <label class="form-label">
-                IPS Proveedora
-            </label>
-
-            <input
-                type="text"
-                name="ips"
-                class="form-control">
-
-        </div>
-
-        <div class="col-md-6">
-
-            <label class="form-label">
-                Médico Evaluador
-            </label>
-
-            <input
-                type="text"
-                name="medico"
-                class="form-control">
-
-        </div>
-
-    </div>
-
-    <div class="mt-3">
-
-        <label class="form-label">
-            Adjuntar Concepto Médico (PDF)
-        </label>
-
-        <input
-            type="file"
-            name="concepto_pdf"
-            class="form-control"
-            accept=".pdf">
-
-    </div>
-
-</div>
-                   
-                
+                </div>
+                {% include 'examenes/_hco_modules.html' %}
                 <div class="mt-4 text-end">
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="submit" class="btn btn-primary">{{ 'Actualizar' if is_edit else 'Guardar' }}</button>
                 </div>
 
             </form>
@@ -219,34 +54,119 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-    const tipo = document.getElementById('tipo_novedad');
-    const sv = document.getElementById('sv_section');
-    const eps = document.getElementById('eps_section');
-    const otro = document.getElementById('otro_section');
-   const periodico = document.getElementById('periodico_section');
-    const tipoExamenSection = document.getElementById('tipo_examen_section');
+    const tipoExamenSelect = document.getElementById('tipo_examen');
+    const tipoValoracionSelect = document.getElementById('tipo_valoracion');
+    const tituloFormulario = document.getElementById('tituloFormulario');
+    const tituloBase = 'Valoración ocupacional laboral';
+    const panelMap = {
+        valoracion_ocupacional: ['med'],
+        valoracion_psicosocial: ['psic'],
+        terapia_ocupacional: ['to'],
+        fisioterapia: ['fis']
+    };
 
+    // Prellenado genérico de campos cuando se edita un examen existente.
+    // Recorre cada clave del objeto recibido (nombre del "name" del campo)
+    // y asigna su valor al/los elemento(s) correspondientes del formulario,
+    // soportando texto, selects, checkboxes, radios y listas de valores.
+    function prefillFormData(data) {
+        Object.keys(data).forEach(function (name) {
+            const value = data[name];
+            const elements = document.getElementsByName(name);
+            if (!elements || !elements.length) return;
 
-    function updateVisibility(){
-        const val = tipo.value;
-        sv.style.display = (val === 'sistema_vigilancia') ? 'block' : 'none';
-        eps.style.display = (val === 'solicitado_eps') ? 'block' : 'none';
-        otro.style.display = (val === 'otro') ? 'block' : 'none';
-        periodico.style.display = (val === 'periodico_ocupacional') ? 'block' : 'none';
-        tipoExamenSection.hidden = val !== '';
-    }
+            if (Array.isArray(value)) {
+                Array.prototype.forEach.call(elements, function (el) {
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        el.checked = value.map(String).includes(el.value);
+                    } else if (el.tagName === 'SELECT' && el.multiple) {
+                        Array.prototype.forEach.call(el.options, function (opt) {
+                            opt.selected = value.map(String).includes(opt.value);
+                        });
+                    } else {
+                        el.value = value.join(', ');
+                    }
+                });
+                return;
+            }
 
-    if(tipo){
-        tipo.addEventListener('change', updateVisibility);
-        updateVisibility();
-    }
-
-    const chatBtn = document.getElementById('chat_btn');
-    if(chatBtn){
-        chatBtn.addEventListener('click', function(){
-            alert('Abrir chat para seguimiento del examen periódico ocupacional');
+            Array.prototype.forEach.call(elements, function (el) {
+                if (el.type === 'checkbox') {
+                    el.checked = String(value) === el.value || (el.value === 'on' && !!value);
+                } else if (el.type === 'radio') {
+                    el.checked = el.value === String(value);
+                } else {
+                    el.value = value;
+                }
+            });
         });
     }
+
+    {% if prefill_json %}
+    prefillFormData({{ prefill_json | safe }});
+    {% endif %}
+
+    function updateTipoValoracion() {
+        const selectedType = tipoValoracionSelect ? tipoValoracionSelect.value : '';
+        const modulesToShow = new Set(panelMap[selectedType] || []);
+        document.querySelectorAll('.hco-panel').forEach(function (panel) {
+            panel.classList.toggle('d-none', !modulesToShow.has(panel.dataset.hcoModule));
+        });
+    }
+
+    function updateTitulo() {
+        if (!tituloFormulario) return;
+        const examenTexto = tipoExamenSelect && tipoExamenSelect.selectedIndex > 0
+            ? tipoExamenSelect.options[tipoExamenSelect.selectedIndex].text
+            : '';
+        const valoracionTexto = tipoValoracionSelect && tipoValoracionSelect.selectedIndex > 0
+            ? tipoValoracionSelect.options[tipoValoracionSelect.selectedIndex].text
+            : '';
+        const partes = [examenTexto, valoracionTexto].filter(Boolean);
+        tituloFormulario.textContent = partes.length ? partes.join(' - ') : tituloBase;
+    }
+
+    if (tipoValoracionSelect) {
+        tipoValoracionSelect.addEventListener('change', function () {
+            updateTipoValoracion();
+            updateTitulo();
+        });
+        updateTipoValoracion();
+    }
+
+    if (tipoExamenSelect) {
+        tipoExamenSelect.addEventListener('change', updateTitulo);
+    }
+
+    updateTitulo();
+
+    const form = document.querySelector('form[method="POST"]');
+    if (form) {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        form.addEventListener('submit', function (event) {
+            if (!tipoExamenSelect.value || !tipoValoracionSelect.value) {
+                event.preventDefault();
+                alert('Debe seleccionar el tipo de examen y el tipo de valoración.');
+                return;
+            }
+
+            const camposCorreo = form.querySelectorAll('input[type="email"]');
+            for (const campo of camposCorreo) {
+                const valor = campo.value.trim();
+                if (valor && !emailPattern.test(valor)) {
+                    event.preventDefault();
+                    const etiqueta = campo.closest('.col-md-3, .col-md-4, .col-md-6, .col-md-12, .col-12')
+                        ? campo.closest('.col-md-3, .col-md-4, .col-md-6, .col-md-12, .col-12').querySelector('label')
+                        : null;
+                    const nombreCampo = etiqueta ? etiqueta.textContent : 'correo electrónico';
+                    alert('El campo "' + nombreCampo + '" debe contener un correo electrónico válido (ejemplo: usuario@dominio.com).');
+                    campo.focus();
+                    return;
+                }
+            }
+        });
+    }
+
 });
 </script>
 

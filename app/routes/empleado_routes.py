@@ -67,16 +67,25 @@ def crear():
 
     if request.method == "POST":
 
-        EmpleadoService.crear(request.form)
+        try:
+            EmpleadoService.crear(request.form)
 
-        flash(
-            "Empleado registrado correctamente.",
-            "success"
-        )
+            flash(
+                "Empleado registrado correctamente.",
+                "success"
+            )
 
-        return redirect(
-            url_for("empleado.listar")
-        )
+            return redirect(
+                url_for("empleado.listar")
+            )
+        
+        except ValueError as e:
+            flash(str(e), "error")
+            catalogos = CatalogoService.obtener_catalogos()
+            return render_template(
+                "empleados/crear.html",
+                **catalogos
+            )
         
     catalogos = CatalogoService.obtener_catalogos()
 

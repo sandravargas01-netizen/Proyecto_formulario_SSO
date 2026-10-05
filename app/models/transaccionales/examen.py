@@ -59,6 +59,27 @@ class Examen(db.Model):
         db.String(10)
     )
 
+    requiere_seguimiento = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    fecha_nuevo_seguimiento = db.Column(
+        db.String(10)
+    )
+
+    profesional_encargado_seguimiento = db.Column(
+        db.String(200)
+    )
+
+    observaciones_seguimiento = db.Column(
+        db.Text
+    )
+
+    post_incapacidad_medico = db.Column(
+        db.String(200)
+    )
+
     fecha_registro = db.Column(
         db.String(10),
         default=lambda: date.today().isoformat(),

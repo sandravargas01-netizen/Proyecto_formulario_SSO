@@ -107,6 +107,26 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
+                    <label class="form-label">Ciudad de nacimiento</label>
+                    <select name="ciudad_nacimiento" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        {% for municipio in municipios %}
+                        <option value="{{ municipio }}" {% if empleado.ciudad_nacimiento == municipio %}selected{% endif %}>{{ municipio }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Ciudad de residencia</label>
+                    <select name="ciudad_residencia" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        {% for municipio in municipios %}
+                        <option value="{{ municipio }}" {% if empleado.ciudad_residencia == municipio %}selected{% endif %}>{{ municipio }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
 
                     <label class="form-label">
                         Teléfono
@@ -131,6 +151,40 @@
                         name="correo"
                         class="form-control"
                         value="{{ empleado.correo }}">
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Escolaridad</label>
+                    <select name="escolaridad" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        {% for nivel in ['Bachiller', 'Técnico', 'Tecnólogo', 'Profesional', 'Especialización', 'Maestría', 'Doctorado'] %}
+                        <option {% if empleado.escolaridad == nivel %}selected{% endif %}>{{ nivel }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Estado civil</label>
+                    <select name="estado_civil" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        {% for estado_civil in ['Soltero(a)', 'Casado(a)', 'Unión libre', 'Separado(a)', 'Divorciado(a)', 'Viudo(a)'] %}
+                        <option {% if empleado.estado_civil == estado_civil %}selected{% endif %}>{{ estado_civil }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" name="direccion" class="form-control" value="{{ empleado.direccion or '' }}">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">ARL</label>
+                    <input type="text" name="arl" class="form-control" value="{{ empleado.arl or '' }}">
                 </div>
 
             </div>

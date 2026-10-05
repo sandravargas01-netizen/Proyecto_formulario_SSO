@@ -13,9 +13,21 @@
             <a href="{{ url_for('examen.descargar_examen_pdf', id=examen.id) }}" class="btn btn-outline-primary me-2" title="Descargar este examen en PDF">
                 <i class="bi bi-file-pdf"></i> Descargar PDF
             </a>
-            <a href="{{ url_for('examen.ver_examen_pdf', id=examen.id) }}" target="_blank" class="btn btn-outline-secondary me-2" title="Ver formulario en PDF">
-                <i class="bi bi-eye"></i> Ver formulario PDF
+            <a href="{{ url_for('examen.editar', id=examen.id) }}" class="btn btn-outline-warning me-2" title="Editar este examen">
+                <i class="bi bi-pencil"></i> Editar
             </a>
+            <form method="POST" action="{{ url_for('examen.eliminar_pdf', id=examen.id) }}" class="d-inline"
+                  onsubmit="return confirm('¿Eliminar el PDF generado de este examen? Podrá volver a generarlo descargándolo nuevamente.');">
+                <button type="submit" class="btn btn-outline-secondary me-2" title="Eliminar el PDF generado">
+                    <i class="bi bi-file-earmark-x"></i> Eliminar PDF
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('examen.eliminar', id=examen.id) }}" class="d-inline"
+                  onsubmit="return confirm('¿Eliminar definitivamente este registro de examen? Esta acción no se puede deshacer.');">
+                <button type="submit" class="btn btn-outline-danger me-2" title="Eliminar este registro de examen">
+                    <i class="bi bi-trash"></i> Eliminar registro
+                </button>
+            </form>
             {% if empleado %}
             <a href="{{ url_for('empleado.consulta_integral', id=empleado.id_empleado) }}" class="btn btn-secondary">Volver</a>
             {% else %}
@@ -30,6 +42,9 @@
             <div class="row">
                 <div class="col-md-6">
                     <p class="mb-2"><strong>Tipo de examen:</strong> {{ tipo_novedad_label }}</p>
+                    {% if novedad_metadata.tipo_valoracion_label %}
+                    <p class="mb-2"><strong>Tipo de valoración:</strong> {{ novedad_metadata.tipo_valoracion_label }}</p>
+                    {% endif %}
                     <p class="mb-2"><strong>Fecha:</strong> {{ examen.fecha_examen }}</p>
                     <p class="mb-2"><strong>IPS:</strong> {{ examen.ips or 'No registrado' }}</p>
                     <p class="mb-2"><strong>Médico:</strong> {{ examen.medico or 'No registrado' }}</p>
@@ -46,12 +61,13 @@
         </div>
     </div>
 
-    {% if tipo_novedad == 'sistema_vigilancia' or tipo_novedad == 'solicitado_eps' or tipo_novedad == 'otro' %}
+    {% set tipos = tipo_novedad_list or ([] if not tipo_novedad else [tipo_novedad]) %}
+    {% if 'sistema_vigilancia' in tipos or 'solicitado_eps' in tipos or 'otro' in tipos %}
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <h5 class="card-title">Detalle de la Novedad</h5>
 
-            {% if tipo_novedad == 'sistema_vigilancia' %}
+            {% if 'sistema_vigilancia' in tipos %}
                 <p class="mb-3"><strong>Programa:</strong> {{ tipo_novedad_label }}</p>
                 <p class="mb-2"><strong>Riesgos asociados:</strong></p>
                 {% if novedad_metadata.riesgos %}
@@ -63,7 +79,9 @@
                 {% else %}
                 <p class="text-muted mb-0">No se registraron riesgos asociados.</p>
                 {% endif %}
-            {% elif tipo_novedad == 'solicitado_eps' %}
+            {% endif %}
+
+            {% if 'solicitado_eps' in tipos %}
                 <p class="mb-2"><strong>Especialidad solicitada:</strong> {{ novedad_metadata.especialidad_eps | replace('_', ' ') | title if novedad_metadata.especialidad_eps else 'No registrada' }}</p>
                 <p class="mb-2"><strong>Observaciones EPS:</strong> {{ novedad_metadata.observaciones_eps or 'No registradas' }}</p>
                 {% if novedad_metadata.archivo_pdf_eps %}
@@ -71,7 +89,9 @@
                     Descargar soporte PDF EPS
                 </a>
                 {% endif %}
-            {% elif tipo_novedad == 'otro' %}
+            {% endif %}
+
+            {% if 'otro' in tipos %}
                 <p class="mb-0"><strong>Descripción de la novedad:</strong> {{ novedad_metadata.descripcion_otro or 'No registrada' }}</p>
             {% endif %}
         </div>
@@ -130,12 +150,6 @@
     </div>
     {% endif %}
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Vista PDF del formulario</h5>
-            <iframe src="{{ url_for('examen.ver_examen_pdf', id=examen.id) }}" style="width:100%; min-height:700px; border:1px solid #dee2e6;" title="Vista PDF del formulario"></iframe>
-        </div>
-    </div>
 </div>
 
 {% endblock %}
