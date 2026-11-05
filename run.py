@@ -1,9 +1,11 @@
+import click
 from sqlalchemy import inspect, text
 
 from app import create_app, db
 
 from app.models.transaccionales.empleado import Empleado
 from app.models.transaccionales.examen import Examen
+from app.models.transaccionales.user import User
 
 app = create_app()
 
@@ -46,6 +48,32 @@ with app.app_context():
     db.create_all()
     _ensure_examenes_schema()
     _ensure_empleados_schema()
+
+
+@app.cli.command("create-admin")
+@click.option("--email", prompt=True)
+@click.option("--username", prompt=True)
+@click.password_option(confirmation_prompt=True)
+def create_admin(email, username, password):
+    email = email.strip().lower()
+    username = username.strip()
+
+    existing_user = User.query.filter(
+        (User.email == email) | (User.username == username)
+    ).first()
+    if existing_user:
+        raise click.ClickException("El correo o nombre de usuario ya está registrado.")
+
+    admin = User(
+        username=username,
+        email=email,
+        rol="admin",
+        is_active=True
+    )
+    admin.set_password(password)
+    db.session.add(admin)
+    db.session.commit()
+    click.echo("Administrador creado. Inicia sesión con el correo y la contraseña definidos.")
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
