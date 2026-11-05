@@ -12,3 +12,5 @@ services:
         sync: false
       - key: SECRET_KEY
         generateValue: true
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false

@@ -1,3 +1,5 @@
+import os
+
 import click
 from sqlalchemy import inspect, text
 
@@ -48,6 +50,29 @@ with app.app_context():
     db.create_all()
     _ensure_examenes_schema()
     _ensure_empleados_schema()
+
+    bootstrap_admin_password = os.environ.get("BOOTSTRAP_ADMIN_PASSWORD")
+    if bootstrap_admin_password:
+        if len(bootstrap_admin_password) < 12:
+            raise RuntimeError("BOOTSTRAP_ADMIN_PASSWORD debe tener al menos 12 caracteres")
+
+        bootstrap_admin = User.query.filter_by(email="admin@gmail.com").first()
+        if bootstrap_admin is None:
+            username_taken = User.query.filter_by(username="admin").first()
+            if username_taken:
+                raise RuntimeError("El nombre de usuario 'admin' ya está ocupado")
+            bootstrap_admin = User(
+                username="admin",
+                email="admin@gmail.com",
+                rol="admin",
+                is_active=True
+            )
+            db.session.add(bootstrap_admin)
+
+        bootstrap_admin.rol = "admin"
+        bootstrap_admin.is_active = True
+        bootstrap_admin.set_password(bootstrap_admin_password)
+        db.session.commit()
 
 
 @app.cli.command("create-admin")

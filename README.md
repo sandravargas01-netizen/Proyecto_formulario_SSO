@@ -153,7 +153,7 @@ La aplicación usa SQLite localmente. En Render, `RENDER=true` activa la configu
 2. Crea una base de datos PostgreSQL en Render y copia su **Internal Database URL**.
 3. En la configuración del servicio web, define `DATABASE_URL` con esa URL. El Blueprint establece `RENDER=true` y genera `SECRET_KEY` automáticamente.
 4. Despliega el servicio. Render instala `requirements.txt`, ejecuta Gunicorn y comprueba `/healthz`.
-5. En la Shell del servicio de Render, ejecuta `flask --app run create-admin`. Ingresa el correo, nombre de usuario y contraseña cuando los solicite; la contraseña no se muestra en pantalla. Luego inicia sesión con ese correo y contraseña.
+5. En Environment del servicio web, define `BOOTSTRAP_ADMIN_PASSWORD` como una contraseña nueva de al menos 12 caracteres. Al iniciar, la aplicación crea o restablece `admin@gmail.com` con rol administrador y guarda la contraseña cifrada. Despliega, inicia sesión con ese correo y la contraseña elegida, y luego elimina `BOOTSTRAP_ADMIN_PASSWORD` de Environment y vuelve a desplegar para evitar que futuros arranques restablezcan la clave.
 
 Los PDF cargados se guardan en `UPLOAD_FOLDER` (por defecto, `instance/uploads`). El sistema de archivos del servicio web de Render no es persistente; para conservar esos archivos tras reinicios, conecta un disco persistente y establece `UPLOAD_FOLDER` en su punto de montaje.
 
