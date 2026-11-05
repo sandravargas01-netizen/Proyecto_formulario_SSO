@@ -16,12 +16,6 @@
             <a href="{{ url_for('examen.editar', id=examen.id) }}" class="btn btn-outline-warning me-2" title="Editar este examen">
                 <i class="bi bi-pencil"></i> Editar
             </a>
-            <form method="POST" action="{{ url_for('examen.eliminar_pdf', id=examen.id) }}" class="d-inline"
-                  onsubmit="return confirm('¿Eliminar el PDF generado de este examen? Podrá volver a generarlo descargándolo nuevamente.');">
-                <button type="submit" class="btn btn-outline-secondary me-2" title="Eliminar el PDF generado">
-                    <i class="bi bi-file-earmark-x"></i> Eliminar PDF
-                </button>
-            </form>
             <form method="POST" action="{{ url_for('examen.eliminar', id=examen.id) }}" class="d-inline"
                   onsubmit="return confirm('¿Eliminar definitivamente este registro de examen? Esta acción no se puede deshacer.');">
                 <button type="submit" class="btn btn-outline-danger me-2" title="Eliminar este registro de examen">

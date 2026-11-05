@@ -123,16 +123,9 @@
                             <a href="{{ url_for('examen.detalle', id=examen.id) }}" class="btn btn-sm btn-outline-primary">Ver detalle</a>
                             <a href="{{ url_for('examen.descargar_examen_pdf', id=examen.id) }}" class="btn btn-sm btn-outline-secondary" title="Descargar PDF">PDF Examen</a>
                             <a href="{{ url_for('examen.editar', id=examen.id) }}" class="btn btn-sm btn-outline-warning" title="Editar examen">Editar</a>
-                            {% if examen.pdf_examen %}
-                                <a href="{{ url_for('examen.pdf_file', filename=examen.pdf_examen) }}" class="btn btn-sm btn-outline-success">Descargar información</a>
-                            {% endif %}
                             {% if examen.pdf_eps %}
                                 <a href="{{ url_for('examen.pdf_file', filename=examen.pdf_eps) }}" class="btn btn-sm btn-outline-secondary">PDF EPS</a>
                             {% endif %}
-                            <form method="POST" action="{{ url_for('examen.eliminar_pdf', id=examen.id) }}" class="d-inline"
-                                  onsubmit="return confirm('¿Eliminar el PDF generado de este examen?');">
-                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Eliminar PDF generado">Eliminar PDF</button>
-                            </form>
                             <form method="POST" action="{{ url_for('examen.eliminar', id=examen.id) }}" class="d-inline"
                                   onsubmit="return confirm('¿Eliminar definitivamente este registro de examen? Esta acción no se puede deshacer.');">
                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar registro de examen">Eliminar</button>

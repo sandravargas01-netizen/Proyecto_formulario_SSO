@@ -3,7 +3,7 @@ import os
 from flask import Flask, redirect
 from flask_sqlalchemy import SQLAlchemy
 
-from app.config import DevelopmentConfig
+from app.config import DevelopmentConfig, ProductionConfig
 
 db = SQLAlchemy()
 
@@ -11,7 +11,16 @@ db = SQLAlchemy()
 def create_app():
 
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object(DevelopmentConfig)
+    if os.environ.get("RENDER", "").lower() == "true":
+        app.config.from_object(ProductionConfig)
+        if not app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgresql+psycopg://"):
+            raise RuntimeError("DATABASE_URL debe ser una URL de PostgreSQL en Render")
+        if not app.config["SECRET_KEY"]:
+            raise RuntimeError("Falta configurar SECRET_KEY en Render")
+    else:
+        app.config.from_object(DevelopmentConfig)
+
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     # ==========================================
     # DATABASE
@@ -47,5 +56,9 @@ def create_app():
     def home():
 
         return redirect("/auth/login")
+
+    @app.route("/healthz")
+    def healthz():
+        return {"status": "ok"}, 200
 
     return app

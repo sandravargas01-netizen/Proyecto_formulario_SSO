@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    current_app,
     render_template,
     request,
     redirect,
@@ -184,7 +185,7 @@ def _procesar_formulario_examen(empleado):
     upload = request.files.get('pdf_eps')
     if upload and upload.filename:
         filename = secure_filename(upload.filename)
-        uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+        uploads_dir = current_app.config["UPLOAD_FOLDER"]
         os.makedirs(uploads_dir, exist_ok=True)
         save_path = os.path.join(uploads_dir, filename)
         upload.save(save_path)
@@ -273,11 +274,22 @@ def _procesar_formulario_examen(empleado):
 
     return {
         "tipo_examen": tipo_examen or tipo_novedad or 'NOVEDAD',
-        "fecha_examen": fecha_novedad or request.form.get('fecha_examen') or '',
-        "medico": request.form.get('medico') or request.form.get('medico_evaluador'),
+        # El campo "Fecha de examen" del formulario de HCO se envía como
+        # "fecha_examen"; se le da prioridad sobre "fecha_novedad" (usado por
+        # otros formularios/novedades) para que el PDF muestre la fecha
+        # realmente diligenciada en vez de la fecha del día por defecto.
+        "fecha_examen": request.form.get('fecha_examen') or fecha_novedad or '',
+        "medico": (
+            request.form.get('medico')
+            or request.form.get('medico_evaluador')
+            or request.form.get('post_incapacidad_medico')
+        ),
         "ips": request.form.get('ips') or request.form.get('ips_proveedora'),
         "estado": request.form.get('estado') or estado_novedad,
-        "concepto_medico": request.form.get('concepto_medico'),
+        # El formulario de HCO no tiene un campo "concepto_medico" propio:
+        # la selección se hace en "Concepto médico de aptitud" (hco_med_concepto),
+        # así que se usa como respaldo para que el PDF no muestre "N/A".
+        "concepto_medico": request.form.get('concepto_medico') or request.form.get('hco_med_concepto'),
         "fecha_nuevo_control": request.form.get('fecha_nuevo_control'),
         "observaciones": combined_observ,
         "concepto_de_aptitud": _normalize_concepto_aptitud(
@@ -291,47 +303,6 @@ def _procesar_formulario_examen(empleado):
         "observaciones_seguimiento": request.form.get('observaciones_seguimiento'),
         "post_incapacidad_medico": request.form.get('post_incapacidad_medico'),
     }
-
-
-def _regenerar_pdf_examen(examen, empleado):
-    """Genera (o regenera) el PDF del examen y guarda la referencia del
-    archivo en ``observaciones``, reemplazando cualquier referencia previa."""
-
-    pdf_filename = f"examen_{empleado.cedula or empleado.id_empleado}_{examen.id}.pdf"
-    uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
-    os.makedirs(uploads_dir, exist_ok=True)
-    pdf_path = os.path.join(uploads_dir, pdf_filename)
-    pdf_buffer = PDFService.generar_examen_pdf(examen, empleado)
-    pdf_buffer.seek(0)
-    with open(pdf_path, 'wb') as generated_pdf:
-        generated_pdf.write(pdf_buffer.read())
-
-    observaciones_sin_pdf = "\n".join(
-        line for line in (examen.observaciones or '').splitlines()
-        if not line.startswith("Archivo PDF Examen:")
-    )
-    examen.observaciones = observaciones_sin_pdf + f"\nArchivo PDF Examen: {pdf_filename}"
-
-
-def _eliminar_pdf_examen_de_disco(observaciones):
-    """Busca la referencia ``Archivo PDF Examen:`` en las observaciones y
-    elimina el archivo físico correspondiente, si existe."""
-
-    if not observaciones:
-        return
-
-    uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
-    for line in observaciones.splitlines():
-        if line.startswith("Archivo PDF Examen:"):
-            filename = line.split(':', 1)[1].strip()
-            if not filename:
-                continue
-            file_path = os.path.join(uploads_dir, filename)
-            if os.path.exists(file_path):
-                try:
-                    os.remove(file_path)
-                except OSError:
-                    pass
 
 
 # ==========================================
@@ -438,9 +409,6 @@ def crear_para_empleado(empleado_id):
         db.session.add(examen)
         db.session.commit()
 
-        _regenerar_pdf_examen(examen, empleado)
-        db.session.commit()
-
         return redirect(
             url_for("empleado.consulta_integral", id=empleado.id_empleado, _anchor="examenes-ocupacionales")
         )
@@ -475,9 +443,6 @@ def editar(id):
         for attribute, value in campos.items():
             setattr(examen, attribute, value)
 
-        db.session.commit()
-
-        _regenerar_pdf_examen(examen, empleado)
         db.session.commit()
 
         flash("Examen actualizado correctamente.", "success")
@@ -532,31 +497,6 @@ def editar(id):
 
 
 @examen_bp.route(
-    "/<int:id>/eliminar-pdf",
-    methods=["POST"]
-)
-def eliminar_pdf(id):
-
-    examen = Examen.query.get(id)
-
-    if not examen:
-        flash("El examen no existe o ya fue eliminado.", "warning")
-        return redirect(url_for("examen.listar"))
-
-    _eliminar_pdf_examen_de_disco(examen.observaciones)
-
-    examen.observaciones = "\n".join(
-        line for line in (examen.observaciones or '').splitlines()
-        if not line.startswith("Archivo PDF Examen:")
-    )
-    db.session.commit()
-
-    flash("El PDF del examen fue eliminado. Puede generarlo nuevamente desde 'Descargar PDF'.", "success")
-
-    return redirect(url_for("examen.detalle", id=examen.id))
-
-
-@examen_bp.route(
     "/<int:id>/eliminar",
     methods=["POST"]
 )
@@ -569,8 +509,6 @@ def eliminar(id):
         return redirect(url_for("examen.listar"))
 
     empleado_id = examen.id_empleado
-
-    _eliminar_pdf_examen_de_disco(examen.observaciones)
 
     db.session.delete(examen)
     db.session.commit()
@@ -633,5 +571,5 @@ def ver_examen_pdf(id):
 
 @examen_bp.route('/pdf/<path:filename>')
 def pdf_file(filename):
-    uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+    uploads_dir = current_app.config["UPLOAD_FOLDER"]
     return send_from_directory(uploads_dir, filename, as_attachment=True)

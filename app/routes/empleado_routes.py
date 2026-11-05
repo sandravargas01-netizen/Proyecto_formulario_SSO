@@ -2,12 +2,14 @@ from app.services.catalogo_service import CatalogoService
 
 from flask import (
     Blueprint,
+    current_app,
     render_template,
     redirect,
     url_for,
     request,
-    flash
+    flash,
 )
+
 
 from app.models.transaccionales.examen import Examen
 from app.services.empleado_service import EmpleadoService
@@ -140,11 +142,10 @@ def consulta_integral(id):
     examenes = Examen.query.filter_by(id_empleado=id).order_by(Examen.fecha_examen.desc()).all()
 
     # extract pdf filename from observaciones if present and check file existence
-    uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+    uploads_dir = current_app.config["UPLOAD_FOLDER"]
     certificaciones = []
     for examen in examenes:
         examen.pdf_eps = None
-        examen.pdf_examen = None
         if examen.observaciones:
             m = re.search(r"Archivo PDF EPS:\s*(\S+)", examen.observaciones)
             if m:
@@ -152,13 +153,6 @@ def consulta_integral(id):
                 fpath = os.path.join(uploads_dir, fname)
                 if os.path.exists(fpath):
                     examen.pdf_eps = fname
-
-            m = re.search(r"Archivo PDF Examen:\s*(\S+)", examen.observaciones)
-            if m:
-                fname = m.group(1)
-                fpath = os.path.join(uploads_dir, fname)
-                if os.path.exists(fpath):
-                    examen.pdf_examen = fname
 
             for line in examen.observaciones.splitlines():
                 if not line.startswith('HCO_DATA:'):
@@ -205,7 +199,7 @@ def descargar_historia(id):
 
     examenes = Examen.query.filter_by(id_empleado=id).order_by(Examen.fecha_examen.desc()).all()
 
-    uploads_dir = os.path.join(os.getcwd(), 'instance', 'uploads')
+    uploads_dir = current_app.config["UPLOAD_FOLDER"]
 
     mem_zip = io.BytesIO()
     added_files = set()

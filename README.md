@@ -145,20 +145,16 @@ DATABASE_URL=sqlite:///...     # Opcional, usa SQLite por defecto
 - Sesiones seguras con cookies HttpOnly
 - Validación de entrada en formularios
 
-## 🚀 Despliegue en Producción
+## 🚀 Despliegue en Render
 
-1. Cambiar `FLASK_ENV` a `production`
-2. Configurar un servidor WSGI (Gunicorn, uWSGI)
-3. Usar una base de datos robusta (PostgreSQL recomendado)
-4. Configurar variables de entorno de producción
-5. Implementar HTTPS
+La aplicación usa SQLite localmente. En Render, `RENDER=true` activa la configuración de producción y exige una URL PostgreSQL en `DATABASE_URL`.
 
-Ejemplo con Gunicorn:
+1. Sube el repositorio a GitHub e impórtalo en Render usando el Blueprint de `render.yaml`.
+2. Crea una base de datos PostgreSQL en Render y copia su **Internal Database URL**.
+3. En la configuración del servicio web, define `DATABASE_URL` con esa URL. El Blueprint establece `RENDER=true` y genera `SECRET_KEY` automáticamente.
+4. Despliega el servicio. Render instala `requirements.txt`, ejecuta Gunicorn y comprueba `/healthz`.
 
-```bash
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 run:app
-```
+Los PDF cargados se guardan en `UPLOAD_FOLDER` (por defecto, `instance/uploads`). El sistema de archivos del servicio web de Render no es persistente; para conservar esos archivos tras reinicios, conecta un disco persistente y establece `UPLOAD_FOLDER` en su punto de montaje.
 
 ## 📚 Próximas Fases
 

@@ -2,17 +2,6 @@ from datetime import date, datetime
 
 from app import db
 from app.models.transaccionales.empleado import Empleado
-from app.models.transaccionales.examen import Examen
-
-
-TIPOS_EXAMEN_MAP = {
-    "1": "Pre-ingreso",
-    "2": "Periódica",
-    "3": "Egreso",
-    "4": "Retorno laboral",
-    "5": "Post-incapacidad",
-  
-}
 
 
 class EmpleadoService:
@@ -21,7 +10,7 @@ class EmpleadoService:
     # LISTAR EMPLEADOS
     # ==========================================
     @staticmethod
-    def listar(cedula=None, nombre=None, estado=None, tipo_examen=None):
+    def listar(cedula=None, nombre=None, estado=None):
 
         consulta = Empleado.query
 
@@ -36,18 +25,7 @@ class EmpleadoService:
             )
 
         if estado:
-            if estado in {"Activo", "Retirado", "Suspendido"}:
-                consulta = consulta.filter(
-                    Empleado.estado == estado
-                )
-            else:
-                tipo_examen_valor = TIPOS_EXAMEN_MAP.get(estado)
-                if not tipo_examen_valor:
-                    tipo_examen_valor = estado.strip()
-
-                consulta = consulta.join(Empleado.examenes).filter(
-                    Examen.tipo_examen.ilike(f"%{tipo_examen_valor}%")
-                ).distinct()
+            consulta = consulta.filter(Empleado.estado == estado)
 
         return (
             consulta

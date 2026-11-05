@@ -288,6 +288,52 @@ HCO_SECTIONS = [
         ("hco_med_firma_profesional", "Firma del profesional evaluador"),
         ("hco_med_tarjeta", "Tarjeta profesional"),
     ]),
+    # Las siguientes secciones corresponden a los paneles del formulario que
+    # solo se muestran según el "Tipo de valoración" seleccionado (psicología,
+    # terapia ocupacional, fisioterapia) y a los bloques complementarios de
+    # certificaciones y concepto multidisciplinario (Resolución 1843 de 2025).
+    ("Valoración de Psicología Ocupacional", [
+        ("hco_psic_tipo", "Tipo de valoración"),
+        ("hco_psic_profesional", "Psicólogo y tarjeta profesional"),
+        ("hco_psic_motivo", "Motivo de consulta"),
+        ("hco_psic_antecedentes", "Antecedentes de salud mental"),
+        ("hco_psic_riesgo", "Nivel de riesgo psicosocial"),
+        ("hco_psic_animo", "Estado de ánimo"),
+        ("hco_psic_aptitud", "Aptitud psicológica"),
+        ("hco_psic_plan", "Diagnóstico y plan de intervención"),
+    ]),
+    ("Valoración de Terapia Ocupacional", [
+        ("hco_to_profesional_evaluador", "Profesional evaluador"),
+        ("hco_to_tarjeta_profesional", "Tarjeta profesional"),
+        ("hco_to_roles_avd", "Roles y actividades afectadas"),
+        ("hco_to_rutina", "Rutina y motivaciones laborales"),
+        ("hco_to_sedente", "Tolerancia sedente"),
+        ("hco_to_destreza", "Destreza manual"),
+        ("hco_to_reintegro", "Tipo de reintegro recomendado"),
+        ("hco_to_concepto", "Adaptaciones y concepto de terapia ocupacional"),
+    ]),
+    ("Valoración de Fisioterapia Ocupacional", [
+        ("hco_fis_region", "Región anatómica"),
+        ("hco_fis_diagnostico", "Diagnóstico de referencia"),
+        ("hco_fis_eva", "EVA actividad laboral (0-10)"),
+        ("hco_fis_evaluacion", "ROM, fuerza y pruebas especiales"),
+        ("hco_fis_tratamiento", "Restricciones físicas y tratamiento"),
+        ("hco_fis_concepto", "Concepto de fisioterapia"),
+        ("hco_fis_proxima_revision", "Próxima revisión"),
+    ]),
+    ("Certificaciones Reglamentarias", [
+        ("hco_cert_actividades", "Actividades certificadas"),
+        ("hco_cert_concepto", "Concepto de aptitud y restricciones"),
+        ("hco_cert_vigencia", "Vigencia hasta"),
+        ("hco_cert_observaciones", "Observaciones de certificación"),
+    ]),
+    ("Concepto Multidisciplinario Integrador", [
+        ("hco_concat_concepto", "Concepto final"),
+        ("hco_concat_origen", "Origen de la condición"),
+        ("hco_concat_plan", "Restricciones consolidadas y plan de reintegro"),
+        ("hco_concat_revision", "Fecha de revisión"),
+        ("hco_concat_coordinador", "Coordinador del equipo"),
+    ]),
 ]
 
 # Traducción de valores "clave" (checkboxes / selects con value distinto al texto
@@ -805,6 +851,12 @@ class PDFService:
         # "INFORMACIÓN DEL EXAMEN" en una sola sección).
         story.append(Paragraph("INFORMACIÓN GENERAL DE LA CONSULTA", heading_style))
 
+        concepto_medico_valor = examen.concepto_medico
+        if concepto_medico_valor:
+            concepto_medico_valor = HCO_FIELD_VALUE_LABELS.get('hco_med_concepto', {}).get(
+                concepto_medico_valor, concepto_medico_valor
+            )
+
         datos_generales = [
             ['Cédula:', str(empleado.cedula or 'N/A')],
             ['Nombre:', f"{empleado.nombres or ''} {empleado.apellidos or ''}"],
@@ -813,7 +865,7 @@ class PDFService:
             ['Médico:', str(examen.medico or 'N/A')],
             ['IPS:', str(examen.ips or 'N/A')],
             ['Estado:', str(examen.estado or 'N/A')],
-            ['Concepto Médico:', str(examen.concepto_medico or 'N/A')],
+            ['Concepto Médico:', str(concepto_medico_valor or 'N/A')],
         ]
 
         if examen.fecha_nuevo_control:
