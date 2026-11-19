@@ -73,30 +73,12 @@ def login():
 
 @auth_bp.route(
     "/recuperar-password",
-    methods=["GET", "POST"]
+    methods=["GET"]
 )
 def recuperar_password():
 
-    mensaje = None
-
-    if request.method == "POST":
-
-        email = request.form["email"].strip().lower()
-
-        usuario = User.query.filter_by(email=email).first()
-
-        if usuario:
-            mensaje = (
-                "Se envió un enlace de recuperación al correo ingresado."
-            )
-        else:
-            mensaje = (
-                "El correo no existe en el sistema."
-            )
-
     return render_template(
-        "auth/recuperar_password.html",
-        mensaje=mensaje
+        "auth/recuperar_password.html"
     )
 
 

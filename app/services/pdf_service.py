@@ -2,13 +2,13 @@ from io import BytesIO
 from datetime import datetime
 import json
 import os
-from urllib.request import urlopen
+from xml.sax.saxutils import escape
 
 try:
     from reportlab.lib.pagesizes import letter, A4
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
     from reportlab.lib import colors
 except ImportError:
     raise ImportError("reportlab debe estar instalado. Ejecute: pip install reportlab")
@@ -351,6 +351,13 @@ HCO_RISK_VALUE_LABELS = {
     'psicosocial': 'Psicosocial', 'espacios_confinados': 'Espacios confinados',
 }
 
+HCO_RISK_GROUPS = (
+    ('fisico', 'Físicos', ('iluminacion', 'radiaciones', 'ruido', 'temp_alta', 'temp_baja', 'vibracion')),
+    ('quimico', 'Químicos', ('gases', 'humos', 'polvos', 'liquidos', 'vapores', 'fibras')),
+    ('ergonomico', 'Ergonómicos', ('carga_dinamica', 'carga_estatica', 'diseno_puesto', 'manejo_cargas', 'mov_repetitivos')),
+    ('otros', 'Otros', ('altura', 'mecanico', 'electrico', 'locativo', 'biologico', 'seguridad', 'psicosocial', 'espacios_confinados')),
+)
+
 HCO_FIELD_VALUE_LABELS = {
     "hco_sve_programas": {
         'ruido': 'Conservación auditiva / ruido', 'radiaciones': 'Radiaciones', 'voz': 'Cuidado de la voz',
@@ -366,6 +373,12 @@ HCO_FIELD_LABELS = {
     field_name: label
     for _, fields in HCO_SECTIONS
     for field_name, label in fields
+}
+
+HCO_FIRMA_FIELDS = {
+    'hco_med_firma_paciente', 'hco_med_firma_profesional', 'hco_med_tarjeta',
+    *(f'hco_firmante_{index}_{field}' for index in (1, 2, 3) for field in ('nombre', 'profesion')),
+    *(f'hco_firmante_{index}_tarjeta' for index in (2, 3)),
 }
 
 # Etiquetas legibles para cada tipo de examen (coinciden con las opciones del
@@ -384,56 +397,104 @@ TIPO_EXAMEN_LABELS = {
 
 class PDFService:
     @staticmethod
-    def _build_logo_image(width=0.75*inch, height=0.75*inch):
-        url = "https://upload.wikimedia.org/wikipedia/commons/5/56/Univalle.svg"
-        try:
-            with urlopen(url, timeout=10) as response:
-                image_bytes = response.read()
-            return Image(BytesIO(image_bytes), width=width, height=height)
-        except Exception:
-            return None
+    def _membrete(canvas, doc):
+        image_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'img')
+        page_width, page_height = doc.pagesize
+        canvas.saveState()
+        canvas.drawImage(
+            os.path.join(image_dir, 'membrete_encabezado.png'),
+            0.7*inch, page_height - 1.05*inch, width=7.1*inch, height=0.96*inch,
+            preserveAspectRatio=True, anchor='c', mask='auto',
+        )
+        canvas.setFillColor(colors.HexColor('#c3171b'))
+        canvas.setFont('Helvetica-Bold', 9)
+        canvas.drawRightString(page_width - 0.7*inch, page_height - 1.21*inch, 'Vicerrectoría de Bienestar Universitario')
+        canvas.drawRightString(page_width - 0.7*inch, page_height - 1.35*inch, 'Sección de Salud Ocupacional')
+        canvas.setStrokeColor(colors.HexColor('#c99e4a'))
+        canvas.setLineWidth(0.7)
+        canvas.line(0.7*inch, 0.84*inch, page_width - 0.7*inch, 0.84*inch)
+        canvas.drawImage(
+            os.path.join(image_dir, 'membrete_plan.png'),
+            0.7*inch, 0.23*inch, width=1.65*inch, height=0.54*inch,
+            preserveAspectRatio=True, anchor='c', mask='auto',
+        )
+        canvas.setFillColor(colors.HexColor('#555555'))
+        canvas.setFont('Helvetica', 7)
+        for index, line in enumerate((
+            'Universidad del Valle',
+            'Ciudad Universitaria Meléndez',
+            'Telefax: 3212100',
+            'Conmutador: 321 21 00 - Ext. 2363',
+            'Correo electrónico: medicinadeltrabajo@correounivalle.edu.co',
+            'Santiago de Cali - Colombia',
+        )):
+            canvas.drawRightString(page_width - 0.7*inch, 0.72*inch - index * 8, line)
+        canvas.restoreState()
+
+    @staticmethod
+    def _hco_risk_tables(hco_data, prefix, normal_style):
+        tables = []
+        label_style = ParagraphStyle(
+            'RiskOption', parent=normal_style, textColor=colors.whitesmoke,
+            spaceAfter=0, leading=9
+        )
+        for suffix, title, options in HCO_RISK_GROUPS:
+            risk = hco_data.get(f'hco_{prefix}_riesgo_{suffix}', [])
+            epp = hco_data.get(f'hco_{prefix}_epp_{suffix}', [])
+            risk = risk if isinstance(risk, list) else [risk]
+            epp = epp if isinstance(epp, list) else [epp]
+
+            for start in range(0, len(options), 6):
+                group = options[start:start + 6]
+                heading = title if start == 0 else f'{title} (continuación)'
+                rows = [
+                    [heading] + [Paragraph(HCO_RISK_VALUE_LABELS[value], label_style) for value in group],
+                    ['Riesgo'] + [PDFService._checkbox(value in risk) for value in group],
+                    ['EPP'] + [
+                        '-' if value == 'psicosocial' and value not in epp
+                        else PDFService._checkbox(value in epp)
+                        for value in group
+                    ],
+                ]
+                table = PDFService._pretty_table(
+                    rows, col_widths=[0.8*inch] + [5.2*inch / len(group)] * len(group)
+                )
+                table.setStyle(TableStyle([
+                    ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ]))
+                tables.append(table)
+        return tables
+
+    @staticmethod
+    def _checkbox(selected):
+        checkbox = Table([['X' if selected else '']], colWidths=[10], rowHeights=[10])
+        checkbox.setStyle(TableStyle([
+            ('BOX', (0, 0), (-1, -1), 0.6, colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 0),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ]))
+        return checkbox
 
     @staticmethod
     def _header_block(title_text, subtitle_text=None):
-        """Construye un encabezado con un único bloque de título institucional
-        (logo + "UNIVERSIDAD DEL VALLE" + subtítulo) seguido del nombre real
-        del examen, sin repetir el nombre de la universidad."""
-        logo = PDFService._build_logo_image()
-        header_rows = [[
-            logo,
-            Paragraph(
-                "<b>UNIVERSIDAD DEL VALLE</b><br/>"
-                f"{subtitle_text or 'Sistema de Salud Ocupacional'}<br/>"
-                f"<b>{title_text}</b>",
-                ParagraphStyle(
-                    'HeaderInstitution',
-                    fontName='Helvetica-Bold',
-                    fontSize=9,
-                    textColor=colors.HexColor('#12395d'),
-                    leading=12,
-                    alignment=1
-                )
-            )
-        ]]
-        header_table = Table(header_rows, colWidths=[0.8*inch, 5.7*inch])
-        header_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 4),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-            ('LINEABOVE', (0, 0), (-1, 0), 1.2, colors.HexColor('#12395d')),
-            ('LINEBELOW', (0, 0), (-1, 0), 1.2, colors.HexColor('#12395d')),
-        ]))
-        return [
-            header_table,
-            Spacer(1, 0.08*inch),
-        ]
+        return [Paragraph(
+            escape(title_text),
+            ParagraphStyle('HeaderTitle', fontName='Helvetica-Bold', fontSize=11,
+                           leading=14, alignment=1, textColor=colors.HexColor('#12395d'),
+                           spaceAfter=5),
+        )]
 
     @staticmethod
     def _pretty_table(data, col_widths, header_bg='#12395d', odd_bg='#f6f9fb', even_bg='#ffffff'):
-        table = Table(data, colWidths=col_widths)
+        scale = 7*inch / sum(col_widths)
+        table = Table(data, colWidths=[width * scale for width in col_widths], hAlign='LEFT', repeatRows=1, splitInRow=1)
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(header_bg)),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -469,6 +530,76 @@ class PDFService:
         return rows
 
     @staticmethod
+    def _separar_observaciones(observaciones):
+        texto, separador, metadata = (observaciones or '').partition('\n---\n')
+        if not separador:
+            return texto, {}
+        lineas = metadata.splitlines()
+        datos = {}
+        resto = []
+        for linea in lineas:
+            if linea.startswith('HCO_DATA:'):
+                try:
+                    valor = json.loads(linea[len('HCO_DATA:'):].strip())
+                except json.JSONDecodeError:
+                    resto.append(linea)
+                else:
+                    if isinstance(valor, dict):
+                        datos.update(valor)
+                    else:
+                        resto.append(linea)
+            else:
+                resto.append(linea)
+        return '\n'.join(part for part in (texto.strip(), '\n'.join(resto).strip()) if part), datos
+
+    @staticmethod
+    def _celda(value, style):
+        return Paragraph(escape(str(value)).replace('\n', '<br/>'), style)
+
+    @staticmethod
+    def _firmas(empleado, datos, style):
+        def display(value):
+            return escape(str(value).strip()) if value else '____________________________'
+
+        nombre_trabajador = f"{empleado.nombres or ''} {empleado.apellidos or ''}".strip()
+        trabajador = (
+            '<b>FIRMA DEL TRABAJADOR</b><br/>'
+            f"Nombre: {display(nombre_trabajador)}<br/>"
+            f"Cédula: {display(empleado.cedula)}<br/>"
+        )
+        if datos.get('hco_med_firma_paciente'):
+            trabajador += f"Registro anterior (texto): {display(datos['hco_med_firma_paciente'])}<br/>"
+        trabajador += '<br/>Firma: ____________________________'
+        rows = []
+        for index in (1, 2, 3):
+            tarjeta = 'hco_med_tarjeta' if index == 1 else f'hco_firmante_{index}_tarjeta'
+            profesional = (
+                f"Nombre: {display(datos.get(f'hco_firmante_{index}_nombre'))}<br/>"
+                f"Profesión: {display(datos.get(f'hco_firmante_{index}_profesion'))}<br/>"
+                f"Tarjeta profesional: {display(datos.get(tarjeta))}<br/>"
+            )
+            if index == 1 and datos.get('hco_med_firma_profesional'):
+                profesional += f"Registro anterior (texto): {display(datos['hco_med_firma_profesional'])}<br/>"
+            profesional += '<br/>Firma: ____________________________'
+            rows.append([Paragraph(profesional, style)])
+        rows.append([Paragraph(trabajador, style)])
+        table = Table(
+            rows, colWidths=[7*inch], minRowHeights=[1.2*inch] * len(rows),
+            hAlign='LEFT', splitInRow=1,
+        )
+        table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('GRID', (0, 0), (-1, -1), 0.7, colors.HexColor('#b7c7d9')),
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f9fbfd')),
+            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        return table
+
+    @staticmethod
     def _group_observaciones_by_section(observaciones):
         rows = PDFService._parse_observaciones_to_rows(observaciones)
         if not rows:
@@ -487,7 +618,7 @@ class PDFService:
 
         def section_for_label(label):
             label_lower = label.lower()
-            if any(keyword in label_lower for keyword in ['tipo de evaluación', 'empresa', 'cargo actual', 'eps / arl', 'motivo de evaluación', 'observaciones generales']):
+            if any(keyword in label_lower for keyword in ['tipo de evaluación', 'empresa', 'cargo actual', 'eps / arl', 'motivo de evaluación', 'motivo de consulta', 'observaciones generales']):
                 return 'Resumen de la evaluación'
             if any(keyword in label_lower for keyword in ['nombre completo', 'cédula', 'fecha de nacimiento', 'edad', 'estado civil', 'ciudad', 'dirección', 'teléfono', 'correo', 'núcleo familiar', 'fecha de evaluación', 'tiempo en el cargo', 'fecha de ingreso']):
                 return 'Datos básicos'
@@ -550,8 +681,8 @@ class PDFService:
             pagesize=letter,
             rightMargin=0.5*inch,
             leftMargin=0.5*inch,
-            topMargin=0.75*inch,
-            bottomMargin=0.75*inch
+            topMargin=1.48*inch,
+            bottomMargin=0.93*inch
         )
         
         # Estilos
@@ -570,41 +701,40 @@ class PDFService:
             parent=styles['Heading2'],
             fontSize=11,
             textColor=colors.HexColor('#1a3a52'),
-            spaceAfter=8,
-            spaceBefore=10,
+            spaceAfter=4,
+            spaceBefore=5,
             fontName='Helvetica-Bold'
         )
         
         heading_style = ParagraphStyle(
             'CustomHeading',
             parent=styles['Heading2'],
-            fontSize=12,
+            fontSize=11,
             textColor=colors.HexColor('#1a3a52'),
-            spaceAfter=10,
-            spaceBefore=10,
+            spaceAfter=5,
+            spaceBefore=5,
             fontName='Helvetica-Bold'
         )
         
         normal_style = ParagraphStyle(
             'CustomNormal',
             parent=styles['Normal'],
-            fontSize=10,
-            spaceAfter=6,
-            leading=13
+            fontSize=9,
+            spaceAfter=0,
+            leading=11
         )
 
         small_style = ParagraphStyle(
             'CustomSmall',
             parent=styles['Normal'],
             fontSize=9,
-            spaceAfter=4,
+            spaceAfter=0,
             leading=11
         )
         
         # Contenido
         story = []
         story.extend(PDFService._header_block("HISTORIA CLÍNICA OCUPACIONAL", "Universidad del Valle - Programa de Salud Ocupacional"))
-        story.append(Spacer(1, 0.15*inch))
         
         # Datos del empleado
         story.append(Paragraph("DATOS GENERALES DEL TRABAJADOR", heading_style))
@@ -617,95 +747,22 @@ class PDFService:
             ['Fecha de generación:', datetime.now().strftime('%d/%m/%Y %H:%M')]
         ]
 
-        tabla_datos = Table(datos_empleado, colWidths=[1.8*inch, 4.2*inch])
+        tabla_datos = Table(
+            [[PDFService._celda(value, small_style) for value in row] for row in datos_empleado],
+            colWidths=[1.8*inch, 5.2*inch], hAlign='LEFT', splitInRow=1
+        )
         tabla_datos.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#e8f0f5')),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
             ('GRID', (0, 0), (-1, -1), 0.75, colors.HexColor('#cccccc')),
         ]))
         story.append(tabla_datos)
-        story.append(Spacer(1, 0.25*inch))
-
-        # Formulario diligenciado
-        story.append(Paragraph("FORMULARIO DILIGENCIADO", heading_style))
-        observaciones_text = ""
-        for examen in examenes or []:
-            if examen.observaciones:
-                observaciones_text = examen.observaciones
-                break
-
-        grouped_sections = PDFService._group_observaciones_by_section(observaciones_text)
-        if grouped_sections:
-            for section_name, section_rows in grouped_sections:
-                story.append(Paragraph(f"<b>{section_name}</b>", subtitle_style))
-                form_table_data = []
-                for label, value in section_rows:
-                    display_value = value.strip() if value and value.strip() else '________________________________________'
-                    form_table_data.append([
-                        Paragraph(f"{label}", small_style),
-                        Paragraph(display_value, normal_style)
-                    ])
-
-                form_table = Table(form_table_data, colWidths=[2.2*inch, 4.0*inch], hAlign='LEFT')
-                form_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f5f8fb')),
-                    ('BACKGROUND', (1, 0), (1, -1), colors.HexColor('#ffffff')),
-                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-                    ('FONTSIZE', (0, 0), (-1, -1), 9),
-                    ('LEFTPADDING', (0, 0), (-1, -1), 6),
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-                    ('TOPPADDING', (0, 0), (-1, -1), 7),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
-                    ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#9aa7b0')),
-                    ('LINEBELOW', (0, 0), (-1, -1), 0.25, colors.HexColor('#e2e8ee')),
-                ]))
-                story.append(form_table)
-                story.append(Spacer(1, 0.08*inch))
-        else:
-            story.append(Paragraph("No hay formulario diligenciado para este trabajador.", normal_style))
-
-        story.append(Spacer(1, 0.25*inch))
-        
-        # Historia ocupacional (exámenes)
-        story.append(Paragraph("REGISTRO DE EXÁMENES Y NOVEDADES", heading_style))
-
-        if examenes:
-            examenes_data = [['Fecha', 'Tipo de examen', 'Concepto médico', 'IPS', 'Estado']]
-
-            for examen in examenes:
-                examenes_data.append([
-                    str(examen.fecha_examen or ''),
-                    str(examen.tipo_examen or ''),
-                    str(examen.concepto_medico or ''),
-                    str(examen.ips or 'N/A'),
-                    str(examen.estado or '')
-                ])
-
-            tabla_examenes = Table(examenes_data, colWidths=[0.9*inch, 1.3*inch, 2.0*inch, 1.0*inch, 0.9*inch])
-            tabla_examenes.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3a52')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 8.5),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                ('TOPPADDING', (0, 0), (-1, -1), 6),
-                ('GRID', (0, 0), (-1, -1), 0.75, colors.HexColor('#cccccc')),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f5f5')]),
-                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ]))
-            story.append(tabla_examenes)
-        else:
-            story.append(Paragraph("No se han registrado exámenes para este trabajador.", normal_style))
-
-        story.append(Spacer(1, 0.25*inch))
+        story.append(Spacer(1, 0.08*inch))
 
         # Detalles de exámenes
         if examenes:
@@ -726,15 +783,18 @@ class PDFService:
                 if examen.fecha_nuevo_control:
                     detalle_data.append(['Próximo control:', str(examen.fecha_nuevo_control)])
 
-                detalle_table = Table(detalle_data, colWidths=[1.7*inch, 4.0*inch])
+                detalle_table = Table(
+                    [[PDFService._celda(value, small_style) for value in row] for row in detalle_data],
+                    colWidths=[1.7*inch, 5.3*inch], hAlign='LEFT', splitInRow=1,
+                )
                 detalle_table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f3f7fb')),
                     ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
                     ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                     ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
                     ('FONTSIZE', (0, 0), (-1, -1), 9),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                    ('TOPPADDING', (0, 0), (-1, -1), 6),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+                    ('TOPPADDING', (0, 0), (-1, -1), 3),
                     ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
                 ]))
                 story.append(detalle_table)
@@ -742,45 +802,40 @@ class PDFService:
                 if examen.restricciones_medicas:
                     story.append(Spacer(1, 0.08*inch))
                     story.append(Paragraph("<b>Restricciones médicas:</b>", small_style))
-                    story.append(Paragraph(str(examen.restricciones_medicas).replace('\n', '<br/>'), normal_style))
+                    story.append(PDFService._celda(examen.restricciones_medicas, normal_style))
 
                 if examen.recomendaciones_medicas:
                     story.append(Spacer(1, 0.08*inch))
                     story.append(Paragraph("<b>Recomendaciones médicas:</b>", small_style))
-                    story.append(Paragraph(str(examen.recomendaciones_medicas).replace('\n', '<br/>'), normal_style))
+                    story.append(PDFService._celda(examen.recomendaciones_medicas, normal_style))
 
+                datos = {}
                 if examen.observaciones:
-                    story.append(Spacer(1, 0.08*inch))
-                    story.append(Paragraph("<b>Observaciones:</b>", small_style))
-                    story.append(Paragraph(str(examen.observaciones).replace('\n', '<br/>'), normal_style))
+                    texto, datos = PDFService._separar_observaciones(examen.observaciones)
+                    if texto:
+                        story.append(Spacer(1, 0.08*inch))
+                        story.append(Paragraph("<b>Observaciones:</b>", small_style))
+                        story.append(PDFService._celda(texto, normal_style))
+                    if datos:
+                        rows = [['Campo', 'Respuesta']]
+                        for key, value in datos.items():
+                            if key in HCO_FIRMA_FIELDS or value in (None, '', [], {}):
+                                continue
+                            label = HCO_FIELD_LABELS.get(key, key.replace('hco_', '').replace('_', ' ').title())
+                            labels = HCO_FIELD_VALUE_LABELS.get(key, {})
+                            values = value if isinstance(value, list) else [value]
+                            formatted = ', '.join(str(labels.get(item, item)) if isinstance(item, str) else str(item) for item in values)
+                            rows.append([PDFService._celda(label, normal_style), PDFService._celda(formatted, normal_style)])
+                        if len(rows) > 1:
+                            story.append(Paragraph("Datos registrados en el formulario", subtitle_style))
+                            story.append(PDFService._pretty_table(rows, col_widths=[2.3*inch, 3.7*inch]))
 
                 story.append(Spacer(1, 0.12*inch))
-        
-        # Firmas finales del documento
-        story.append(Spacer(1, 0.25*inch))
-        firmas = Table([
-            [
-                Paragraph(
-                    "<b>FIRMA DEL TRABAJADOR</b><br/>Nombre: " + (f"{empleado.nombres or ''} {empleado.apellidos or ''}" if empleado else "") + "<br/>Cédula: " + str(empleado.cedula or 'N/A') + "<br/><br/>______________________________",
-                    ParagraphStyle('Firmas', fontName='Helvetica', fontSize=9, leading=12)
-                ),
-                Paragraph(
-                    "<b>FIRMA DEL PROFESIONAL</b><br/>Nombre: _______________________________<br/>Tarjeta profesional N°: ___________________<br/><br/>______________________________",
-                    ParagraphStyle('Firmas', fontName='Helvetica', fontSize=9, leading=12)
-                )
-            ]
-        ], colWidths=[3.0*inch, 3.0*inch])
-        firmas.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('GRID', (0, 0), (-1, -1), 0.7, colors.HexColor('#b7c7d9')),
-            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f9fbfd')),
-            ('LEFTPADDING', (0, 0), (-1, -1), 10),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-            ('TOPPADDING', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-        ]))
-        story.append(firmas)
+                story.append(PDFService._firmas(empleado, datos, small_style))
+        else:
+            story.append(Paragraph("No se han registrado exámenes para este trabajador.", normal_style))
+            story.append(PDFService._firmas(empleado, {}, small_style))
+
         story.append(Spacer(1, 0.3*inch))
         firma_text = f"Documento generado automáticamente el {datetime.now().strftime('%d de %B de %Y a las %H:%M')}"
         story.append(Paragraph(firma_text, ParagraphStyle(
@@ -792,7 +847,7 @@ class PDFService:
         )))
         
         # Construir el PDF
-        doc.build(story)
+        doc.build(story, onFirstPage=PDFService._membrete, onLaterPages=PDFService._membrete)
         buffer.seek(0)
         
         return buffer
@@ -817,8 +872,8 @@ class PDFService:
             pagesize=letter,
             rightMargin=0.5*inch,
             leftMargin=0.5*inch,
-            topMargin=0.5*inch,
-            bottomMargin=0.5*inch
+            topMargin=1.48*inch,
+            bottomMargin=0.93*inch
         )
         
         # Estilos
@@ -836,8 +891,9 @@ class PDFService:
         normal_style = ParagraphStyle(
             'CustomNormal',
             parent=styles['Normal'],
-            fontSize=7,
-            spaceAfter=3
+            fontSize=8,
+            leading=10,
+            spaceAfter=0
         )
         
         # Contenido
@@ -871,7 +927,10 @@ class PDFService:
         if examen.fecha_nuevo_control:
             datos_generales.append(['Próximo Control:', str(examen.fecha_nuevo_control)])
 
-        tabla_datos = Table(datos_generales, colWidths=[1.5*inch, 4*inch])
+        tabla_datos = Table(
+            [[PDFService._celda(value, normal_style) for value in row] for row in datos_generales],
+            colWidths=[1.7*inch, 5.3*inch], hAlign='LEFT', splitInRow=1,
+        )
         tabla_datos.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#e8f0f5')),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
@@ -885,6 +944,7 @@ class PDFService:
         story.append(tabla_datos)
         story.append(Spacer(1, 0.12*inch))
 
+        hco_data = {}
         if examen.observaciones:
             # Partition first (on the raw text) and strip each part afterwards.
             # Stripping before partitioning can remove the leading "\n" of the
@@ -905,16 +965,16 @@ class PDFService:
                     if ':' in line:
                         label, value = line.split(':', 1)
                         table_data.append([
-                            Paragraph(label.strip(), normal_style),
-                            Paragraph(value.strip(), normal_style)
+                            PDFService._celda(label.strip(), normal_style),
+                            PDFService._celda(value.strip(), normal_style)
                         ])
                     else:
                         table_data.append([
-                            Paragraph(line.strip(), normal_style),
+                            PDFService._celda(line.strip(), normal_style),
                             ''
                         ])
 
-                form_table = Table(table_data, colWidths=[2.5*inch, 3.5*inch])
+                form_table = Table(table_data, colWidths=[2.5*inch, 4.5*inch], hAlign='LEFT', splitInRow=1)
                 form_table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f8f9fa')),
                     ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
@@ -962,22 +1022,222 @@ class PDFService:
                         return str(value_labels[raw_value])
                     return str(raw_value)
 
-                remaining_keys = set(hco_data.keys())
+                remaining_keys = set(hco_data.keys()) - HCO_FIRMA_FIELDS
+                has_med_data = any(
+                    key not in HCO_FIRMA_FIELDS and key.startswith(('hco_med_', 'hco_occ'))
+                    for key in hco_data
+                )
+
+                def _hco_response(name):
+                    raw_value = hco_data.get(name)
+                    if raw_value in (None, '', [], {}):
+                        return 'No registrado'
+                    remaining_keys.discard(name)
+                    value = _hco_format_value(name, raw_value)
+                    return value if value.strip() else 'No registrado'
+
+                def _hco_cell(value):
+                    return Paragraph(escape(value).replace('\n', '<br/>'), normal_style)
+
+                def _hco_field_table(fields):
+                    rows = [["Campo", "Respuesta"]]
+                    rows.extend([
+                        [_hco_cell(label), _hco_cell(_hco_response(name))]
+                        for name, label in fields
+                    ])
+                    return PDFService._pretty_table(rows, col_widths=[2.3*inch, 3.7*inch])
 
                 # Secciones organizadas en el mismo orden y con las mismas
                 # etiquetas del formulario de valoración ocupacional.
                 for section_title, section_fields in HCO_SECTIONS:
+                    if section_title == "3. Antecedentes Ocupacionales":
+                        section_started = False
+                        for indice in (1, 2, 3):
+                            prefix = f'hco_occ{indice}_'
+                            company_fields = [
+                                (name, label) for name, label in section_fields
+                                if name.startswith(prefix)
+                            ]
+                            if not any(hco_data.get(name) not in (None, '', [], {}) for name, _ in company_fields):
+                                continue
+                            if not section_started:
+                                story.append(Paragraph(section_title, heading_style))
+                                section_started = True
+                            story.append(Paragraph(f"Empresa {indice}", heading_style))
+                            company_rows = [["Campo", "Descripción"]]
+                            for field_name, label in company_fields:
+                                raw_value = hco_data.get(field_name)
+                                if raw_value in (None, '', [], {}):
+                                    continue
+                                if field_name.endswith(risk_matrix_suffixes):
+                                    values = raw_value if isinstance(raw_value, list) else [raw_value]
+                                    options = next(
+                                        options for suffix, _, options in HCO_RISK_GROUPS
+                                        if field_name.endswith(f'_{suffix}')
+                                    )
+                                    unknown = [value for value in values if value not in options]
+                                    remaining_keys.discard(field_name)
+                                    if not unknown:
+                                        continue
+                                    raw_value = unknown
+                                formatted_value = _hco_format_value(field_name, raw_value)
+                                if formatted_value.strip():
+                                    company_rows.append([
+                                        Paragraph(label, normal_style),
+                                        PDFService._celda(formatted_value, normal_style)
+                                    ])
+                                    remaining_keys.discard(field_name)
+                            if len(company_rows) > 1:
+                                story.append(PDFService._pretty_table(company_rows, col_widths=[2.3*inch, 3.7*inch]))
+                            story.extend(PDFService._hco_risk_tables(hco_data, f'occ{indice}', normal_style))
+                            story.append(Spacer(1, 0.12*inch))
+                        continue
+
+                    if section_title == "4. Antecedentes":
+                        story.append(Paragraph(section_title, heading_style))
+                        story.append(Paragraph(
+                            "Antecedentes de enfermedades laborales - Accidentes laborales",
+                            heading_style
+                        ))
+                        has_labor_data = False
+                        for index in (1, 2, 3):
+                            fields = _hco_antecedente_laboral_fields(index)
+                            if not any(hco_data.get(name) not in (None, '', [], {}) for name, _ in fields):
+                                continue
+                            has_labor_data = True
+                            story.append(Paragraph(f"Antecedente laboral #{index}", heading_style))
+                            rows = [["Campo", "Respuesta"]]
+                            for name, label in fields:
+                                raw_value = hco_data.get(name)
+                                value = _hco_format_value(name, raw_value) if raw_value not in (None, '', [], {}) else 'No registrado'
+                                rows.append([
+                                    Paragraph(escape(label), normal_style),
+                                    Paragraph(escape(value).replace('\n', '<br/>'), normal_style),
+                                ])
+                                remaining_keys.discard(name)
+                            story.append(PDFService._pretty_table(rows, col_widths=[2.3*inch, 3.7*inch]))
+                        if not has_labor_data:
+                            story.append(Paragraph("No hay información registrada.", normal_style))
+
+                        family_fields = [
+                            (name, label) for name, label in section_fields
+                            if name.startswith('hco_med_familiar_') or name == 'hco_med_antecedentes_familiares'
+                        ]
+                        family_rows = [["Campo", "Respuesta"]]
+                        for name, label in family_fields:
+                            raw_value = hco_data.get(name)
+                            if raw_value in (None, '', [], {}):
+                                continue
+                            value = _hco_format_value(name, raw_value)
+                            family_rows.append([
+                                Paragraph(escape(label), normal_style),
+                                Paragraph(escape(value).replace('\n', '<br/>'), normal_style),
+                            ])
+                            remaining_keys.discard(name)
+                        if len(family_rows) > 1:
+                            story.append(Paragraph("Antecedentes familiares", heading_style))
+                            story.append(PDFService._pretty_table(family_rows, col_widths=[2.3*inch, 3.7*inch]))
+
+                        story.append(Paragraph("Antecedentes personales", heading_style))
+                        personal_rows = [["Antecedente", "Respuesta"]]
+                        for key, label in HCO_ANTECEDENTES_PERSONALES:
+                            name = f'hco_med_personal_{key}'
+                            raw_value = hco_data.get(name)
+                            value = _hco_format_value(name, raw_value) if raw_value not in (None, '', [], {}) else 'No registrado'
+                            personal_rows.append([
+                                Paragraph(escape(label), normal_style),
+                                Paragraph(escape(value).replace('\n', '<br/>'), normal_style),
+                            ])
+                            remaining_keys.discard(name)
+                        observations = hco_data.get('hco_med_antecedentes')
+                        if observations not in (None, '', [], {}):
+                            value = _hco_format_value('hco_med_antecedentes', observations)
+                            personal_rows.append([
+                                Paragraph('Observaciones', normal_style),
+                                Paragraph(escape(value).replace('\n', '<br/>'), normal_style),
+                            ])
+                            remaining_keys.discard('hco_med_antecedentes')
+                        story.append(PDFService._pretty_table(personal_rows, col_widths=[2.3*inch, 3.7*inch]))
+
+                        if not has_med_data:
+                            story.append(Spacer(1, 0.12*inch))
+                            continue
+
+                        gyn_start = next(i for i, (name, _) in enumerate(section_fields) if name == 'hco_med_ginecoobstetricos')
+                        review_start = next(i for i, (name, _) in enumerate(section_fields) if name == 'hco_med_revision_piel_faneras_resultado')
+                        story.append(Paragraph("Gineco-obstétricos", heading_style))
+                        story.append(_hco_field_table(section_fields[gyn_start:review_start]))
+
+                        story.append(Paragraph("Revisión de síntomas por sistemas", heading_style))
+                        review_rows = [["Sistema", "Resultado", "Hallazgo"]]
+                        for key, label in HCO_REVISION_SISTEMAS:
+                            review_rows.append([
+                                _hco_cell(label),
+                                _hco_cell(_hco_response(f'hco_med_revision_{key}_resultado')),
+                                _hco_cell(_hco_response(f'hco_med_revision_{key}_hallazgo')),
+                            ])
+                        story.append(PDFService._pretty_table(
+                            review_rows, col_widths=[2*inch, 1.3*inch, 2.7*inch]
+                        ))
+                        story.append(_hco_field_table([
+                            field for field in section_fields
+                            if field[0] in ('hco_med_revision_sistemas_observaciones', 'hco_med_medicamentos_alergias')
+                        ]))
+                        story.append(Spacer(1, 0.12*inch))
+                        continue
+
+                    if section_title in ("5. Hábitos", "6. Examen Físico", "7. Esquema de Vacunación"):
+                        if not has_med_data and not any(
+                            hco_data.get(name) not in (None, '', [], {}) for name, _ in section_fields
+                        ):
+                            continue
+                        story.append(Paragraph(section_title, heading_style))
+                        if section_title == "5. Hábitos":
+                            story.append(_hco_field_table(section_fields))
+                        elif section_title == "6. Examen Físico":
+                            system_start = next(
+                                i for i, (name, _) in enumerate(section_fields)
+                                if name == 'hco_med_osteomuscular_columna_resultado'
+                            )
+                            story.append(_hco_field_table(section_fields[:system_start]))
+                            story.append(Paragraph("Revisión por sistemas", heading_style))
+                            story.append(_hco_field_table(section_fields[system_start:]))
+                        else:
+                            vaccine_rows = [["Vacuna", "N° de dosis", "Fecha de última dosis"]]
+                            for key, label in HCO_VACUNAS:
+                                vaccine_rows.append([
+                                    _hco_cell(label),
+                                    _hco_cell(_hco_response(f'hco_med_vacuna_{key}_dosis')),
+                                    _hco_cell(_hco_response(f'hco_med_vacuna_{key}_fecha')),
+                                ])
+                            other_name = _hco_response('hco_med_vacuna_otra_nombre')
+                            vaccine_rows.append([
+                                _hco_cell(other_name if hco_data.get('hco_med_vacuna_otra_nombre') else 'Otra vacuna'),
+                                _hco_cell(_hco_response('hco_med_vacuna_otra_dosis')),
+                                _hco_cell(_hco_response('hco_med_vacuna_otra_fecha')),
+                            ])
+                            story.append(PDFService._pretty_table(
+                                vaccine_rows, col_widths=[2.4*inch, 1.2*inch, 2.4*inch]
+                            ))
+                        story.append(Spacer(1, 0.12*inch))
+                        continue
+
                     section_rows = [["Campo", "Descripción"]]
                     for field_name, label in section_fields:
+                        if field_name in HCO_FIRMA_FIELDS:
+                            continue
                         raw_value = hco_data.get(field_name)
                         if raw_value in (None, '', [], {}):
                             continue
                         formatted_value = _hco_format_value(field_name, raw_value)
+                        if field_name == 'hco_med_concepto' and formatted_value == concepto_medico_valor:
+                            remaining_keys.discard(field_name)
+                            continue
                         if not formatted_value.strip():
                             continue
                         section_rows.append([
                             Paragraph(label, normal_style),
-                            Paragraph(formatted_value.replace('\n', '<br/>'), normal_style)
+                            PDFService._celda(formatted_value, normal_style)
                         ])
                         remaining_keys.discard(field_name)
 
@@ -1001,7 +1261,7 @@ class PDFService:
                         label = HCO_FIELD_LABELS.get(key, key.replace('hco_', '').replace('_', ' ').title())
                         extra_rows.append([
                             Paragraph(label, normal_style),
-                            Paragraph(formatted_value.replace('\n', '<br/>'), normal_style)
+                            PDFService._celda(formatted_value, normal_style)
                         ])
 
                     if len(extra_rows) > 1:
@@ -1009,57 +1269,17 @@ class PDFService:
                         story.append(PDFService._pretty_table(extra_rows, col_widths=[2.3*inch, 3.7*inch]))
                         story.append(Spacer(1, 0.12*inch))
 
-        signature_sections = [
-            'Médico Laboral',
-            'Terapeuta Ocupacional',
-            'Fisioterapeuta',
-            'Psicólogo'
-        ]
+        for field, label in (
+            ('recomendaciones_medicas', 'Recomendaciones generales'),
+            ('restricciones_medicas', 'Restricciones médicas'),
+        ):
+            value = getattr(examen, field, None)
+            if value:
+                story.append(Paragraph(label, heading_style))
+                story.append(PDFService._celda(value, normal_style))
 
-        for profession in signature_sections:
-            signature_table = Table([
-                [Paragraph('Nombre de Profesional', normal_style), Paragraph('', normal_style)],
-                [Paragraph('Profesión', normal_style), Paragraph(profession, normal_style)],
-                [Paragraph('Lic. Salud Ocupacional', normal_style), Paragraph('', normal_style)],
-                [Paragraph('Firma Digitalizada', normal_style), Paragraph('', normal_style)],
-            ], colWidths=[2.5*inch, 3.5*inch])
-            signature_table.setStyle(TableStyle([
-                ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
-                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 0), (-1, -1), 7),
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f8f9fa')),
-                ('LEFTPADDING', (0, 0), (-1, -1), 3),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 3),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
-                ('TOPPADDING', (0, 0), (-1, -1), 2),
-            ]))
-            story.append(signature_table)
-            story.append(Spacer(1, 0.08*inch))
-
-        # Firmas finales del documento
         story.append(Spacer(1, 0.12*inch))
-        firma_trabajador = Paragraph(
-            "<b>FIRMA DEL TRABAJADOR</b><br/>Nombre: " + (f"{empleado.nombres or ''} {empleado.apellidos or ''}" if empleado else "") + "<br/>Cédula: " + str(empleado.cedula or 'N/A') + "<br/><br/>______________________________",
-            ParagraphStyle('FirmaTrabajador', fontName='Helvetica', fontSize=7, leading=10)
-        )
-        firma_profesional = Paragraph(
-            "<b>FIRMA DEL PROFESIONAL</b><br/>Nombre: _______________________________<br/>Tarjeta profesional N°: ___________________<br/><br/>______________________________",
-            ParagraphStyle('FirmaProfesional', fontName='Helvetica', fontSize=7, leading=10)
-        )
-        firmas = Table([[firma_trabajador, firma_profesional]], colWidths=[3.0*inch, 3.0*inch])
-        firmas.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('GRID', (0, 0), (-1, -1), 0.7, colors.HexColor('#b7c7d9')),
-            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f9fbfd')),
-            ('LEFTPADDING', (0, 0), (-1, -1), 5),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ]))
-        story.append(firmas)
+        story.append(PDFService._firmas(empleado, hco_data, normal_style))
         story.append(Spacer(1, 0.15*inch))
         firma_text = f"Documento generado automáticamente el {datetime.now().strftime('%d de %B de %Y a las %H:%M')}"
         story.append(Paragraph(firma_text, ParagraphStyle(
@@ -1071,7 +1291,7 @@ class PDFService:
         )))
         
         # Construir el PDF
-        doc.build(story)
+        doc.build(story, onFirstPage=PDFService._membrete, onLaterPages=PDFService._membrete)
         buffer.seek(0)
         
         return buffer

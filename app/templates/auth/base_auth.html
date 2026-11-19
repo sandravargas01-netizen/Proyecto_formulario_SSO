@@ -35,12 +35,23 @@
 
     </style>
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/institucional.css') }}">
+
 </head>
 
-<body>
+<body class="auth-shell">
 
+    <main class="auth-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="container auth-alert">
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }}" role="alert">{{ message }}</div>
+        </div>
+        {% endfor %}
+    {% endwith %}
     {% block content %}
     {% endblock %}
+    </main>
 
 </body>
 

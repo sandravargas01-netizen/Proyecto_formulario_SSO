@@ -94,6 +94,19 @@ Proyecto_formulario/
 
 ## 🔑 Funcionalidades Principales
 
+### Programas de vigilancia epidemiológica
+- En el perfil del empleado, los administradores pueden asignar y consultar los siete programas de vigilancia.
+- Cada registro guarda la fecha de ingreso, dependencia, cargo, riesgos, hallazgos, responsable, nombre opcional de quien diligencia el formulario, observaciones opcionales y una descripción opcional del soporte. Dependencia y cargo se completan inicialmente con los datos del empleado y se pueden editar.
+- Se puede adjuntar un PDF de hasta 5 MB por registro. El archivo se guarda en la base de datos y su descarga está restringida a administradores activos.
+- La tabla `programa_vigilancia` se crea y actualiza al iniciar la aplicación mediante `run.py`; los registros anteriores se conservan. Incluye estos datos y archivos en las copias de seguridad de la base de datos.
+
+### Reportes
+- En el reporte de empleados, el botón de Excel descarga todos los empleados activos con el número de exámenes registrados por cada uno, independientemente de los filtros de la página. La descarga requiere un usuario activo con sesión iniciada.
+
+### Documentos PDF
+- Los PDF de historia clínica y de exámenes utilizan en cada página el membrete institucional suministrado. Las imágenes del encabezado y pie se encuentran en `app/static/img/`.
+- Cada examen incluye hasta tres bloques de profesionales y, al final, un espacio para la firma manuscrita del trabajador; los nombres, profesiones y tarjetas se registran en el formulario. Los textos de firma antiguos se conservan como registros históricos, no como firmas digitales.
+
 ### Autenticación
 - Registro de nuevos usuarios
 - Inicio de sesión seguro

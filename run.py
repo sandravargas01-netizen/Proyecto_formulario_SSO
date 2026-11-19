@@ -8,6 +8,7 @@ from app import create_app, db
 from app.models.transaccionales.empleado import Empleado
 from app.models.transaccionales.examen import Examen
 from app.models.transaccionales.user import User
+from app.services.vigilancia_service import actualizar_esquema_vigilancia
 
 app = create_app()
 
@@ -50,6 +51,7 @@ with app.app_context():
     db.create_all()
     _ensure_examenes_schema()
     _ensure_empleados_schema()
+    actualizar_esquema_vigilancia(db.engine)
 
     bootstrap_admin_password = os.environ.get("BOOTSTRAP_ADMIN_PASSWORD")
     if bootstrap_admin_password:

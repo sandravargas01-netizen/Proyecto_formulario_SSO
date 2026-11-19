@@ -88,6 +88,12 @@
 </div>
 {% endmacro %}
 
+<div class="row g-3 mb-3">
+    <div class="col-md-4"><label class="form-label" for="fecha_examen">Fecha del examen</label><input type="date" id="fecha_examen" name="fecha_examen" class="form-control"></div>
+    <div class="col-md-4"><label class="form-label" for="post_incapacidad_medico">Médico evaluador</label><input type="text" id="post_incapacidad_medico" name="post_incapacidad_medico" class="form-control"></div>
+    <div class="col-md-4"><label class="form-label" for="concepto_de_aptitud">Concepto de aptitud laboral</label><select name="concepto_de_aptitud" id="concepto_de_aptitud" class="form-select"><option value="">-- Seleccione --</option><option value="apto">Apto</option><option value="apto_con_restricciones">Apto con restricciones</option><option value="no_apto">No apto</option><option value="pendiente">Pendiente resultado</option></select></div>
+</div>
+
 <div class="col-12 hco-panel" data-hco-module="med">
     {{ personal_block() }}
     <div class="card border-primary">
@@ -95,7 +101,6 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-12"><h6 class="fw-bold text-primary mb-1">1. Información General</h6></div>
-                <div class="col-md-3"><label class="form-label">Fecha de examen</label><input type="date" name="fecha_examen" class="form-control"></div>
                 <div class="col-md-3"><label class="form-label">Hora</label><input type="time" name="hco_med_hora" class="form-control"></div>
                 <div class="col-md-3"><label class="form-label">Ciudad del examen</label><select name="hco_med_ciudad" class="form-select"><option value="">-- Seleccione --</option><option>Leticia</option><option>Medellín</option><option>Arauca</option><option>Barranquilla</option><option>Cartagena</option><option>Tunja</option><option>Manizales</option><option>Florencia</option><option>Yopal</option><option>Popayán</option><option>Valledupar</option><option>Quibdó</option><option>Montería</option><option>Bogotá D.C.</option><option>Puerto Carreño</option><option>Inírida</option><option>San José del Guaviare</option><option>Neiva</option><option>Riohacha</option><option>Santa Marta</option><option>Villavicencio</option><option>Pasto</option><option>Cúcuta</option><option>Mocoa</option><option>Armenia</option><option>Pereira</option><option>San Andrés</option><option>Bucaramanga</option><option>Sincelejo</option><option>Ibagué</option><option>Cali</option><option>Mitú</option></select></div>
                 <div class="col-md-3"><label class="form-label">Departamento</label><select name="hco_med_departamento" class="form-select"><option value="">-- Seleccione --</option><option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option><option>Caquetá</option><option>Casanare</option><option>Cauca</option><option>Cesar</option><option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option><option>Bogotá D.C.</option><option>Guainía</option><option>Guaviare</option><option>Huila</option><option>La Guajira</option><option>Magdalena</option><option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option><option>Quindío</option><option>Risaralda</option><option>San Andrés y Providencia</option><option>Santander</option><option>Sucre</option><option>Tolima</option><option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option></select></div>
@@ -110,7 +115,6 @@
                 <div class="col-md-4"><label class="form-label">EPS</label><input type="text" name="hco_med_eps" class="form-control" value="{{ empleado.eps.nombre if empleado and empleado.eps else '' }}"></div>
                 <div class="col-md-4"><label class="form-label">ARL</label><input type="text" name="hco_med_arl" class="form-control"></div>
                 <div class="col-md-4"><label class="form-label">AFP</label><input type="text" name="hco_med_afp" class="form-control" value="{{ empleado.afp.nombre if empleado and empleado.afp else '' }}"></div>
-                <div class="col-md-4"><label class="form-label">Médico evaluador</label><input type="text" name="post_incapacidad_medico" class="form-control"></div>
                 <div class="col-md-4"><label class="form-label">Clase de riesgo</label><select name="hco_med_riesgo" class="form-select"><option value="">--</option><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option></select></div>
 
                 <div class="col-12"><h6 class="fw-bold text-primary mb-1 mt-2">Datos contractuales</h6></div>
@@ -491,9 +495,6 @@
                 <div class="col-md-6"><label class="form-label">Remisiones / Observación restricción</label><textarea name="hco_med_remisiones" rows="3" class="form-control"></textarea></div>
                 <div class="col-12"><label class="form-label">Recomendaciones generales</label><textarea name="recomendaciones_medicas" rows="3" class="form-control"></textarea></div>
                 <div class="col-12"><label class="form-label">Restricciones médicas</label><textarea name="restricciones_medicas" rows="3" class="form-control"></textarea></div>
-                <div class="col-md-4"><label class="form-label">Firma del paciente</label><input type="text" name="hco_med_firma_paciente" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Firma del profesional evaluador</label><input type="text" name="hco_med_firma_profesional" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Tarjeta profesional</label><input type="text" name="hco_med_tarjeta" class="form-control"></div>
             </div>
         </div>
     </div>
@@ -554,7 +555,7 @@
 <div class="col-12 hco-panel d-none" data-hco-module="cert">
     {{ personal_block() }}
     <div class="card border-dark">
-        <div class="card-header bg-dark text-white">Certificaciones reglamentarias</div>
+        <div class="card-header bg-primary-subtle text-primary-emphasis">Certificaciones reglamentarias</div>
         <div class="card-body"><div class="row g-3">
             <div class="col-md-6"><label class="form-label">Actividades certificadas</label><textarea name="hco_cert_actividades" rows="3" class="form-control" placeholder="Alturas, espacios confinados, conduccion, sustancias peligrosas, alimentos, buceo, turnos o respirador."></textarea></div>
             <div class="col-md-6"><label class="form-label">Concepto de aptitud y restricciones</label><textarea name="hco_cert_concepto" rows="3" class="form-control"></textarea></div>
@@ -575,6 +576,26 @@
             <div class="col-md-6"><label class="form-label">Fecha de revision</label><input type="date" name="hco_concat_revision" class="form-control"></div>
             <div class="col-md-6"><label class="form-label">Coordinador del equipo</label><input type="text" name="hco_concat_coordinador" class="form-control"></div>
         </div></div>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-body">
+        <h6 class="fw-bold text-primary">Profesionales que firman</h6>
+        <p class="text-muted small">Las firmas del trabajador y de los profesionales se realizarán en el PDF impreso.</p>
+        <input type="hidden" name="hco_med_firma_paciente">
+        <input type="hidden" name="hco_med_firma_profesional">
+        {% for numero in range(1, 4) %}
+        <fieldset class="border rounded p-3 mb-3">
+            <legend class="float-none w-auto px-1 fs-6 fw-semibold">Profesional {{ numero }}</legend>
+            <div class="row g-3">
+                <div class="col-md-4"><label class="form-label" for="hco_firmante_{{ numero }}_nombre">Nombre</label><input type="text" id="hco_firmante_{{ numero }}_nombre" name="hco_firmante_{{ numero }}_nombre" maxlength="200" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label" for="hco_firmante_{{ numero }}_profesion">Profesión</label><input type="text" id="hco_firmante_{{ numero }}_profesion" name="hco_firmante_{{ numero }}_profesion" maxlength="200" class="form-control"></div>
+                {% set tarjeta_name = 'hco_med_tarjeta' if numero == 1 else 'hco_firmante_' ~ numero ~ '_tarjeta' %}
+                <div class="col-md-4"><label class="form-label" for="{{ tarjeta_name }}">Tarjeta profesional</label><input type="text" id="{{ tarjeta_name }}" name="{{ tarjeta_name }}" maxlength="200" class="form-control"></div>
+            </div>
+        </fieldset>
+        {% endfor %}
     </div>
 </div>
 

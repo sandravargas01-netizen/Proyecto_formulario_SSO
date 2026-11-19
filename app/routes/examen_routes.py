@@ -174,7 +174,7 @@ def _procesar_formulario_examen(empleado):
     tipo_examen = (request.form.get('tipo_examen') or '').strip()
     tipo_valoracion = (request.form.get('tipo_valoracion') or '').strip()
     fecha_novedad = request.form.get('fecha_novedad') or date.today().isoformat()
-    estado_novedad = request.form.get('estado_novedad') or 'pendiente'
+    estado_novedad = request.form.get('estado_novedad') or request.form.get('estado') or 'pendiente'
     riesgos = request.form.getlist('riesgo[]') or request.form.getlist('riesgo')
     especialidad_eps = request.form.get('especialidad_eps')
     observaciones_eps = request.form.get('observaciones_eps')
@@ -461,6 +461,7 @@ def editar(id):
         "estado_novedad": metadata.get("estado_novedad"),
         "medico": examen.medico,
         "medico_evaluador": examen.medico,
+        "post_incapacidad_medico": examen.post_incapacidad_medico or examen.medico,
         "ips": examen.ips,
         "ips_proveedora": examen.ips,
         "estado": examen.estado,

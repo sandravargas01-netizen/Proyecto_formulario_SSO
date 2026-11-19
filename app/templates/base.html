@@ -128,9 +128,11 @@
 
     </style>
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/institucional.css') }}">
+
 </head>
 
-<body>
+<body class="app-shell">
 
     <!-- SI HAY SESIÓN -->
 
@@ -138,15 +140,15 @@
 
         <!-- SIDEBAR -->
 
-        <div class="sidebar">
+        <nav class="sidebar" aria-label="Navegación principal">
 
             <!-- LOGO -->
 
             <div class="logo-container">
 
-                <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/5/56/Univalle.svg"
-                >
+                <span class="sidebar-logo">
+                    <img src="{{ url_for('static', filename='univalle.jpg') }}" alt="Universidad del Valle">
+                </span>
 
                 <h4>
                     Universidad del Valle
@@ -162,12 +164,6 @@
             <!-- ADMIN -->
 
             {% if session["rol"] == "admin" %}
-
-                <a href="/admin/dashboard">
-
-                    Dashboard
-
-                </a>
 
                 <a href="/empleados/">
 
@@ -223,7 +219,7 @@
 
             </a>
 
-        </div>
+        </nav>
 
     {% endif %}
 
@@ -238,6 +234,19 @@
             center-screen
         {% endif %}
     ">
+
+        {% if session.get("usuario") %}
+        <header class="app-topbar">
+            <div>
+                <span class="app-topbar-eyebrow">Universidad del Valle</span>
+                <span class="app-topbar-title">Salud Ocupacional</span>
+            </div>
+            <div class="app-user">
+                <span class="app-user-label">Sesión activa</span>
+                <strong>{{ session.get("usuario") }}</strong>
+            </div>
+        </header>
+        {% endif %}
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

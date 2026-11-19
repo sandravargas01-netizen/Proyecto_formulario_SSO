@@ -1,0 +1,739 @@
+:root {
+    --univalle-red: #c90019;
+    --univalle-red-dark: #a70016;
+    --univalle-ink: #292b30;
+    --univalle-muted: #667078;
+    --univalle-border: #e4e6e9;
+    --bs-primary: #c90019;
+    --bs-primary-rgb: 201, 0, 25;
+    --bs-link-color: #b60019;
+    --bs-link-hover-color: #850012;
+}
+
+body {
+    color: var(--univalle-ink);
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 17px;
+}
+
+a {
+    color: var(--bs-link-color);
+}
+
+a:hover {
+    color: var(--bs-link-hover-color);
+}
+
+.app-shell {
+    background: #f5f5f5;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 26px 14px;
+    background: #fff;
+    border-top: 5px solid var(--univalle-red);
+    border-right: 1px solid var(--univalle-border);
+    box-shadow: 4px 0 24px rgba(31, 35, 40, .04);
+}
+
+.logo-container {
+    margin-bottom: 24px;
+    padding: 4px 10px 24px;
+    border-bottom: 1px solid var(--univalle-border);
+}
+
+.sidebar-logo {
+    display: block;
+    position: relative;
+    width: 150px;
+    height: 85px;
+    margin: 0 auto 12px;
+    overflow: hidden;
+}
+
+.logo-container .sidebar-logo img {
+    position: absolute;
+    width: 270%;
+    height: auto;
+    max-width: none;
+    margin: 0;
+    left: 50%;
+    top: 65%;
+    transform: translate(-50%, -50%);
+}
+
+.logo-container h4 {
+    color: var(--univalle-ink);
+    font-size: 18px;
+    line-height: 1.3;
+    margin-bottom: 5px;
+}
+
+.logo-container p {
+    color: var(--univalle-muted);
+    font-size: 14px;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.sidebar a {
+    color: #41474c;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color .15s, color .15s;
+}
+
+.sidebar a:hover,
+.sidebar a:focus-visible {
+    color: var(--univalle-red-dark);
+    background: #fbebed;
+    padding-left: 14px;
+}
+
+.sidebar a[href="/auth/logout"] {
+    color: var(--univalle-red-dark);
+    border-top: 1px solid var(--univalle-border);
+    border-radius: 0;
+    margin-top: 16px;
+    padding-top: 18px;
+}
+
+.content {
+    min-width: 0;
+    padding: 0 32px 40px;
+}
+
+.content.center-screen {
+    padding: 24px;
+}
+
+.app-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    min-height: 80px;
+    margin: 0 -32px 32px;
+    padding: 14px 32px;
+    background: #fff;
+    border-bottom: 1px solid var(--univalle-border);
+}
+
+.app-topbar-eyebrow,
+.app-user-label {
+    display: block;
+    color: var(--univalle-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.app-topbar-title {
+    display: block;
+    color: var(--univalle-red-dark);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.app-user {
+    text-align: right;
+    font-size: 15px;
+    overflow-wrap: anywhere;
+}
+
+.content h1, .content h2, .content h3, .content h4 {
+    letter-spacing: -.025em;
+}
+
+.card {
+    border: 1px solid var(--univalle-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(32, 38, 45, .05);
+}
+
+.card-header {
+    padding: 16px 20px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--univalle-border);
+}
+
+.card-header:first-child {
+    border-radius: 11px 11px 0 0;
+}
+
+.card-body {
+    padding: 22px;
+}
+
+.dashboard-metric {
+    height: 100%;
+    border-top: 4px solid var(--univalle-red);
+}
+
+.dashboard-metric h4 {
+    color: var(--univalle-muted);
+    font-size: 16px;
+}
+
+.dashboard-metric h1 {
+    color: var(--univalle-ink);
+    font-weight: 700;
+}
+
+.btn {
+    font-weight: 600;
+    border-radius: 7px;
+}
+
+.btn-sm {
+    --bs-btn-font-size: .9375rem;
+}
+
+.btn-primary {
+    --bs-btn-bg: #c90019;
+    --bs-btn-border-color: #c90019;
+    --bs-btn-hover-bg: #a70016;
+    --bs-btn-hover-border-color: #a70016;
+    --bs-btn-active-bg: #850012;
+    --bs-btn-active-border-color: #850012;
+    --bs-btn-focus-shadow-rgb: 201, 0, 25;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: #b00017;
+    --bs-btn-border-color: #b00017;
+    --bs-btn-hover-bg: #b00017;
+    --bs-btn-hover-border-color: #b00017;
+    --bs-btn-active-bg: #850012;
+    --bs-btn-active-border-color: #850012;
+    --bs-btn-focus-shadow-rgb: 201, 0, 25;
+}
+
+.nav-modulo-btn.btn-outline-primary {
+    --bs-btn-color: #222;
+    --bs-btn-bg: #fff7f7;
+    --bs-btn-border-color: #e6b9bd;
+    --bs-btn-hover-color: #222;
+    --bs-btn-hover-bg: #f9e1e3;
+    --bs-btn-hover-border-color: #db9fa5;
+    --bs-btn-active-color: #222;
+    --bs-btn-active-bg: #f3cdd1;
+    --bs-btn-active-border-color: #d78d96;
+    --bs-btn-focus-shadow-rgb: 215, 141, 150;
+}
+
+.btn-link {
+    --bs-btn-color: #b00017;
+    --bs-btn-hover-color: #850012;
+}
+
+.form-label, form label {
+    color: #41474c;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.hco-panel .form-check-label {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+
+.form-control, .form-select {
+    border-color: #cfd4d9;
+    border-radius: 7px;
+    font-size: 16px;
+}
+
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+    border-color: #cc4656;
+    box-shadow: 0 0 0 .2rem rgba(201, 0, 25, .14);
+}
+
+.form-check-input:checked {
+    background-color: var(--univalle-red);
+    border-color: var(--univalle-red);
+}
+
+.table {
+    --bs-table-hover-bg: #fbf3f4;
+    vertical-align: middle;
+}
+
+.table th {
+    font-size: 14px;
+    letter-spacing: .02em;
+}
+
+.table td, .table th {
+    padding: .75rem;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.vigilancia-texto {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.vigilancia-programa {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 82px;
+    padding: 10px 16px 10px 10px;
+    border: 2px solid var(--programa-borde);
+    border-radius: 999px;
+    background: var(--programa-fondo);
+    color: var(--programa-texto);
+    box-shadow: 0 3px 10px rgba(38, 56, 76, .07);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-decoration: none;
+    transition: background-color .15s, border-color .15s, box-shadow .15s;
+}
+
+.vigilancia-programa--azul {
+    --programa-fondo: #eaf2fb;
+    --programa-borde: #cddff1;
+    --programa-texto: #234b70;
+    --programa-icono: #d3e4f4;
+    --programa-hover: #dbeaf8;
+}
+
+.vigilancia-programa--naranja {
+    --programa-fondo: #fff1e5;
+    --programa-borde: #f5d9c1;
+    --programa-texto: #7a411d;
+    --programa-icono: #fbe0ca;
+    --programa-hover: #fce6d3;
+}
+
+.vigilancia-programa:hover {
+    background: var(--programa-hover);
+    color: var(--programa-texto);
+    box-shadow: 0 5px 14px rgba(38, 56, 76, .13);
+}
+
+.vigilancia-programa:focus-visible {
+    outline: 3px solid var(--univalle-red-dark);
+    outline-offset: 3px;
+}
+
+.vigilancia-programa-numero {
+    display: grid;
+    flex: 0 0 54px;
+    height: 54px;
+    place-items: center;
+    border: 4px solid rgba(255, 255, 255, .85);
+    border-radius: 50%;
+    background: var(--programa-icono);
+    font-size: 15px;
+}
+
+.vigilancia-programa-nombre {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.vigilancia-programa-flecha {
+    font-size: 20px;
+}
+
+.vigilancia-page {
+    max-width: 1150px;
+}
+
+.vigilancia-back {
+    display: inline-block;
+    margin-bottom: 20px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.vigilancia-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.vigilancia-eyebrow,
+.vigilancia-person-label {
+    display: block;
+    color: var(--univalle-red-dark);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.vigilancia-heading h2 {
+    margin: 6px 0;
+    font-size: clamp(26px, 3vw, 34px);
+    font-weight: 700;
+}
+
+.vigilancia-heading p,
+.vigilancia-section-heading p {
+    margin: 0;
+    color: var(--univalle-muted);
+    font-size: 15px;
+}
+
+.vigilancia-private {
+    padding: 6px 12px;
+    border: 1px solid #e8cace;
+    border-radius: 999px;
+    background: #fff5f6;
+    color: var(--univalle-red-dark);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.vigilancia-person {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    border: 1px solid var(--univalle-border);
+    border-left: 4px solid var(--univalle-red);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.vigilancia-person-icon {
+    display: grid;
+    flex: 0 0 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: 50%;
+    background: #fbebed;
+    color: var(--univalle-red-dark);
+}
+
+.vigilancia-person strong,
+.vigilancia-person-id {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.vigilancia-person-id,
+.vigilancia-field-note,
+.vigilancia-optional {
+    color: var(--univalle-muted);
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.vigilancia-form {
+    margin-top: 20px;
+    border: 1px solid var(--univalle-border);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgba(32, 38, 45, .05);
+}
+
+.vigilancia-form-section {
+    padding: 26px 30px;
+    border-bottom: 1px solid var(--univalle-border);
+}
+
+.vigilancia-section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.vigilancia-section-number {
+    display: grid;
+    flex: 0 0 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 9px;
+    background: #fbebed;
+    color: var(--univalle-red-dark);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.vigilancia-section-heading h3 {
+    margin: 0 0 4px;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.vigilancia-form .form-control {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+}
+
+.vigilancia-form textarea.form-control {
+    resize: vertical;
+}
+
+.vigilancia-required {
+    color: var(--univalle-red-dark);
+}
+
+.vigilancia-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 30px;
+}
+
+.auth-shell {
+    background: #f5f5f5;
+    border-top: 7px solid var(--univalle-red);
+    display: flex;
+    min-height: 100vh;
+    padding: 32px 0;
+}
+
+.auth-main {
+    width: 100%;
+}
+
+.auth-alert {
+    max-width: 820px;
+}
+
+.auth-card {
+    overflow: hidden;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    box-shadow: 0 18px 55px rgba(31, 35, 40, .1);
+}
+
+.auth-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 490px;
+    padding: 42px;
+    background: #b90019;
+    color: #fff;
+}
+
+.auth-logo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 150px;
+    height: 115px;
+    margin-bottom: 32px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.auth-logo img {
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    object-fit: contain;
+}
+
+.auth-brand-eyebrow, .auth-kicker {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.auth-brand-eyebrow {
+    color: #ffe4e7;
+}
+
+.auth-brand h1 {
+    margin: 12px 0 20px;
+    font-size: clamp(30px, 3vw, 39px);
+    font-weight: 700;
+    letter-spacing: -.04em;
+    line-height: 1.1;
+}
+
+.auth-brand-line {
+    width: 44px;
+    height: 3px;
+    margin-bottom: 20px;
+    background: #fff;
+}
+
+.auth-brand p {
+    max-width: 230px;
+    color: #ffe7e9;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.auth-brand-footer {
+    margin-top: auto;
+    padding-top: 24px;
+    color: #ffe4e7;
+    font-size: 14px;
+}
+
+.auth-form-panel {
+    padding: 62px 52px;
+}
+
+.auth-kicker {
+    color: var(--univalle-red);
+}
+
+.auth-form-panel h2 {
+    margin: 12px 0 8px;
+    color: var(--univalle-ink);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.04em;
+}
+
+.auth-intro {
+    margin-bottom: 32px;
+    color: var(--univalle-muted);
+    font-size: 16px;
+}
+
+.auth-form-panel .form-control {
+    min-height: 46px;
+}
+
+.auth-submit {
+    min-height: 46px;
+}
+
+.auth-recovery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid var(--univalle-border);
+    color: var(--univalle-muted);
+    font-size: 15px;
+}
+
+.auth-recovery a {
+    font-weight: 600;
+}
+
+.auth-page-footer {
+    margin: 22px 0 0;
+    color: var(--univalle-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+@media (max-width: 767.98px) {
+    .vigilancia-form-section,
+    .vigilancia-form-actions {
+        padding: 20px 16px;
+    }
+
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 14px;
+    }
+
+    .logo-container {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        width: 100%;
+        padding: 0 0 12px;
+        margin-bottom: 8px;
+        text-align: left;
+    }
+
+    .sidebar-logo {
+        width: 80px;
+        height: 45px;
+        margin: 0;
+        flex: 0 0 auto;
+    }
+
+    .logo-container h4, .logo-container p {
+        margin: 0;
+    }
+
+    .sidebar a, .sidebar a[href="/auth/logout"] {
+        margin: 0;
+        padding: 9px 10px;
+        border: 0;
+        font-size: 15px;
+    }
+
+    .sidebar a:hover, .sidebar a:focus-visible {
+        padding-left: 10px;
+    }
+
+    .with-sidebar {
+        margin-left: 0;
+    }
+
+    .content {
+        padding: 0 16px 28px;
+    }
+
+    .app-topbar {
+        min-height: 68px;
+        margin: 0 -16px 22px;
+        padding: 12px 16px;
+    }
+
+    .card-body {
+        padding: 16px;
+    }
+
+    .auth-brand {
+        min-height: 0;
+        padding: 28px;
+    }
+
+    .auth-logo {
+        width: 110px;
+        height: 90px;
+        margin-bottom: 20px;
+    }
+
+    .auth-brand h1 {
+        margin-bottom: 14px;
+    }
+
+    .auth-brand-footer {
+        padding-top: 8px;
+    }
+
+    .auth-form-panel {
+        padding: 32px 28px;
+    }
+}

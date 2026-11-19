@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid vigilancia-page">
+    <a class="vigilancia-back" href="{{ url_for('vigilancia.programas', empleado_id=empleado.id_empleado) }}">← Volver a programas</a>
+
+    <header class="vigilancia-heading">
+        <div>
+            <h2>{{ nombre_programa }}</h2>
+            <p>Registra la información de ingreso y seguimiento del programa.</p>
+        </div>
+        <span class="vigilancia-private">Acceso para administradores</span>
+    </header>
+
+    <div class="vigilancia-person">
+        <span class="vigilancia-person-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4.5 21c.5-4 3.2-6 7.5-6s7 2 7.5 6"></path>
+            </svg>
+        </span>
+        <div>
+            <span class="vigilancia-person-label">Empleado</span>
+            <strong>{{ empleado.nombres }} {{ empleado.apellidos }}</strong>
+            <span class="vigilancia-person-id">Cédula: {{ empleado.cedula }}</span>
+        </div>
+    </div>
+
+    {% if errors %}
+    <div class="alert alert-danger mt-4" role="alert">
+        <strong>Revisa los siguientes datos:</strong>
+        <ul class="mb-0">
+            {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="vigilancia-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <section class="vigilancia-form-section">
+            <div class="vigilancia-section-heading">
+                <span class="vigilancia-section-number">01</span>
+                <div>
+                    <h3>Datos del programa</h3>
+                    <p>Información de ingreso y contexto laboral del empleado.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="fecha_ingreso" class="form-label">Fecha de ingreso al programa <span class="vigilancia-required">*</span></label>
+                    <input type="date" id="fecha_ingreso" name="fecha_ingreso" class="form-control" value="{{ values.get('fecha_ingreso', '') }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="responsable" class="form-label">Responsable del programa <span class="vigilancia-required">*</span></label>
+                    <input type="text" id="responsable" name="responsable" class="form-control" maxlength="200" value="{{ values.get('responsable', '') }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="dependencia" class="form-label">Dependencia</label>
+                    <input type="text" id="dependencia" name="dependencia" class="form-control" maxlength="200" value="{{ values.get('dependencia', '') }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="cargo" class="form-label">Cargo</label>
+                    <input type="text" id="cargo" name="cargo" class="form-control" maxlength="200" value="{{ values.get('cargo', '') }}">
+                </div>
+                <div class="col-12">
+                    <p class="vigilancia-field-note mb-0">La dependencia y el cargo se completan con los datos del empleado cuando están disponibles y pueden modificarse.</p>
+                </div>
+                <div class="col-12">
+                    <label for="nombre_registrador" class="form-label">Nombre de quien diligencia el formulario <span class="vigilancia-optional">(opcional)</span></label>
+                    <input type="text" id="nombre_registrador" name="nombre_registrador" class="form-control" maxlength="200" value="{{ values.get('nombre_registrador', '') }}" placeholder="Nombre completo">
+                </div>
+            </div>
+        </section>
+
+        <section class="vigilancia-form-section">
+            <div class="vigilancia-section-heading">
+                <span class="vigilancia-section-number">02</span>
+                <div>
+                    <h3>Valoración del riesgo</h3>
+                    <p>Describe los riesgos identificados y los hallazgos relevantes.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="riesgos" class="form-label">Riesgos identificados <span class="vigilancia-required">*</span></label>
+                    <textarea id="riesgos" name="riesgos" class="form-control" rows="4" maxlength="10000" required>{{ values.get('riesgos', '') }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label for="hallazgos" class="form-label">Hallazgos <span class="vigilancia-required">*</span></label>
+                    <textarea id="hallazgos" name="hallazgos" class="form-control" rows="4" maxlength="10000" required>{{ values.get('hallazgos', '') }}</textarea>
+                </div>
+                <div class="col-12">
+                    <label for="observaciones" class="form-label">Observaciones <span class="vigilancia-optional">(opcional)</span></label>
+                    <textarea id="observaciones" name="observaciones" class="form-control" rows="4" maxlength="10000">{{ values.get('observaciones', '') }}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section class="vigilancia-form-section">
+            <div class="vigilancia-section-heading">
+                <span class="vigilancia-section-number">03</span>
+                <div>
+                    <h3>Soporte médico</h3>
+                    <p>Agrega documentación o información complementaria, si está disponible.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="descripcion_soporte" class="form-label">Descripción del soporte <span class="vigilancia-optional">(opcional)</span></label>
+                    <textarea id="descripcion_soporte" name="descripcion_soporte" class="form-control" rows="3" maxlength="10000">{{ values.get('descripcion_soporte', '') }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label for="soporte_pdf" class="form-label">Archivo PDF <span class="vigilancia-optional">(opcional)</span></label>
+                    <input type="file" id="soporte_pdf" name="soporte_pdf" class="form-control" accept=".pdf,application/pdf" aria-describedby="ayuda-soporte">
+                    <div id="ayuda-soporte" class="form-text">Un archivo PDF de máximo 5 MB. Si hay errores, selecciónalo nuevamente.</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="vigilancia-form-actions">
+            <p class="vigilancia-field-note mb-0"><span class="vigilancia-required">*</span> Campos obligatorios</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('vigilancia.programas', empleado_id=empleado.id_empleado) }}" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar programa</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

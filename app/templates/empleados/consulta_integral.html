@@ -13,12 +13,6 @@
         {% endif %}
     {% endfor %}
 
-    <div class="mb-3">
-        <div class="small text-muted fw-semibold">Gestión de Empleados</div>
-        <div class="small text-muted">Consultar</div>
-        <div class="small text-muted">Seleccionar empleado</div>
-    </div>
-
     {% set exam_periodico = namespace(item=None) %}
     {% for examen in examenes %}
         {% if exam_periodico.item is none and examen.tipo_examen and 'period' in examen.tipo_examen|lower %}
@@ -144,13 +138,18 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <h5 class="card-title mb-0">🦺 Sistemas de Vigilancia Epidemiológica</h5>
-                <a href="{{ url_for('examen.crear_para_empleado', empleado_id=empleado.id_empleado) }}" class="btn btn-sm btn-primary">➕ Asignar Programa de Vigilancia</a>
+                {% if session.get('rol') == 'admin' %}
+                <a href="{{ url_for('vigilancia.programas', empleado_id=empleado.id_empleado) }}" class="btn btn-sm btn-primary">➕ Asignar Programa de Vigilancia</a>
+                {% endif %}
             </div>
-            {% if ns.sv_total > 0 %}
-                <p class="mb-2">Este empleado cuenta con <strong>{{ ns.sv_total }}</strong> registro(s) asociado(s) a sistema de vigilancia epidemiológica.</p>
-                <p class="text-muted mb-0">Puedes revisar cada registro en la sección de exámenes ocupacionales desde el botón "Ver detalle".</p>
+            {% if session.get('rol') == 'admin' %}
+                <p>Consulta los programas asignados y registra los riesgos, hallazgos y soportes médicos desde el botón de asignación.</p>
             {% else %}
-                <p class="text-muted mb-0">No hay registros de vigilancia epidemiológica asociados actualmente.</p>
+                <p>La gestión de programas y sus soportes médicos está disponible para administradores.</p>
+            {% endif %}
+            {% if ns.sv_total > 0 %}
+                <p class="mb-2">Este empleado cuenta con <strong>{{ ns.sv_total }}</strong> registro(s) histórico(s) de novedades de vigilancia.</p>
+                <p class="text-muted mb-0">Puedes revisar cada registro en la sección de exámenes ocupacionales desde el botón "Ver detalle".</p>
             {% endif %}
         </div>
     </div>

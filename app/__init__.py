@@ -39,6 +39,7 @@ def create_app():
     from app.routes.reportes_routes import reportes_bp
     from app.routes.configuracion_routes import configuracion_bp
     from app.routes.usuarios_routes import usuarios_bp
+    from app.routes.vigilancia_routes import vigilancia_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(empleado_bp)
@@ -47,6 +48,7 @@ def create_app():
     app.register_blueprint(reportes_bp)
     app.register_blueprint(configuracion_bp)
     app.register_blueprint(usuarios_bp)
+    app.register_blueprint(vigilancia_bp)
 
     # ==========================================
     # HOME

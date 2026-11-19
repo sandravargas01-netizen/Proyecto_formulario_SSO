@@ -42,8 +42,28 @@
                             <option value="fisioterapia">Valoración por Fisioterapia Ocupacional</option>
                         </select>
                     </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="ips">IPS</label>
+                        <input type="text" name="ips" id="ips" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="estado">Estado</label>
+                        <select name="estado" id="estado" class="form-select">
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_proceso">En proceso</option>
+                            <option value="finalizado">Finalizado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="fecha_nuevo_control">Próximo control</label>
+                        <input type="date" name="fecha_nuevo_control" id="fecha_nuevo_control" class="form-control">
+                    </div>
                 </div>
                 {% include 'examenes/_hco_modules.html' %}
+                <div class="mt-4">
+                    <label class="form-label" for="observaciones">Observaciones generales</label>
+                    <textarea name="observaciones" id="observaciones" class="form-control" rows="3"></textarea>
+                </div>
                 <div class="mt-4 text-end">
                     <button type="submit" class="btn btn-primary">{{ 'Actualizar' if is_edit else 'Guardar' }}</button>
                 </div>
@@ -96,6 +116,10 @@ document.addEventListener('DOMContentLoaded', function(){
                 } else if (el.type === 'radio') {
                     el.checked = el.value === String(value);
                 } else {
+                    if ((name === 'estado' || name === 'concepto_de_aptitud') && el.tagName === 'SELECT' &&
+                        !Array.from(el.options).some(option => option.value === String(value))) {
+                        el.add(new Option(String(value), String(value)));
+                    }
                     el.value = value;
                 }
             });

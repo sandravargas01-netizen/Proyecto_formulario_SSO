@@ -1,109 +1,50 @@
 {% extends "auth/base_auth.html" %}
 
 {% block content %}
-
 <div class="container">
-
     <div class="row justify-content-center">
-
-        <div class="col-lg-9">
-
-            <div class="card shadow-lg border-0">
-
+        <div class="col-lg-10 col-xl-9">
+            <div class="card auth-card">
                 <div class="row g-0">
-
-                    <!-- PANEL IZQUIERDO -->
-
-                    <div class="col-md-5 bg-primary text-white text-center p-5">
-
-                        <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/5/56/Univalle.svg"
-                            width="100"
-                            class="mb-4">
-
-                        <h1 class="fw-bold">
-
-                            Universidad del Valle
-
-                        </h1>
-
-                        <h3>
-
-                            Sección de Salud Ocupacional
-
-                        </h3>
-
-                        <hr>
-
-                        <p>
-
-                            Sistema de Gestión de Empleados y Exámenes Ocupacionales
-
-                        </p>
-
+                    <div class="col-md-5 auth-brand">
+                        <div class="auth-logo">
+                            <img src="{{ url_for('static', filename='img/logo_univalle.png') }}"
+                                 alt="Universidad del Valle">
+                        </div>
+                        <span class="auth-brand-eyebrow">Universidad del Valle</span>
+                        <h1>Salud<br>Ocupacional</h1>
+                        <div class="auth-brand-line"></div>
+                        <p>Sistema de gestión de empleados y exámenes ocupacionales.</p>
+                        <span class="auth-brand-footer">Sección de Salud Ocupacional</span>
                     </div>
-
-                    <!-- LOGIN -->
-
-                    <div class="col-md-7 p-5">
-
-                        <h1 class="fw-bold">
-
-                            Iniciar Sesión
-
-                        </h1>
-
-                        <p class="text-muted">
-
-                            Sistema Salud Ocupacional
-
-                        </p>
+                    <div class="col-md-7 auth-form-panel">
+                        <span class="auth-kicker">Bienvenido al sistema</span>
+                        <h2>Iniciar sesión</h2>
+                        <p class="auth-intro">Ingresa tus datos para acceder a tu cuenta.</p>
 
                         <form method="POST">
-
-                            <div class="mb-3">
-
-                                <label>Email</label>
-
-                                <input
-                                    type="email"
-                                    name="email"
-                                    class="form-control"
-                                    required>
-
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Correo electrónico</label>
+                                <input type="email" id="email" name="email" class="form-control"
+                                       autocomplete="username" required>
                             </div>
-
-                            <div class="mb-3">
-
-                                <label>Contraseña</label>
-
-                                <input
-                                    type="password"
-                                    name="password"
-                                    class="form-control"
-                                    required>
-
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" id="password" name="password" class="form-control"
+                                       autocomplete="current-password" required>
                             </div>
-
-                            <button
-                                class="btn btn-primary w-100">
-
-                                Ingresar
-
-                            </button>
-
+                            <button type="submit" class="btn btn-primary w-100 auth-submit">Ingresar</button>
                         </form>
 
+                        <div class="auth-recovery">
+                            <span>¿Olvidaste tu contraseña?</span>
+                            <a href="{{ url_for('auth.recuperar_password') }}">Restablecer contraseña</a>
+                        </div>
                     </div>
-
                 </div>
-
             </div>
-
+            <p class="auth-page-footer">Universidad del Valle · Sección de Salud Ocupacional</p>
         </div>
-
     </div>
-
 </div>
-
 {% endblock %}
